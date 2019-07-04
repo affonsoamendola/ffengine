@@ -1,3 +1,20 @@
+/*  
+  Copyright Affonso Amendola 2019
+
+  Fofonso's SDL Engine
+
+  This is part of my SDL Game/Software Engine,
+
+  Distributed under GPLv3, use it to your hearts content,
+  just remember the number one rule:
+
+  Be Excellent to Each Other.
+*/
+
+//TOOD:
+//Make a proper cursor texture.
+//Make a better texture holder system.
+
 #pragma once
 
 #include <string>
@@ -13,6 +30,8 @@
 
 class Engine;
 
+//Definition of what a Color object is,
+//a bunch of uint8s, defaults to opaque black.
 class Color
 {
 public:
@@ -27,21 +46,24 @@ public:
 
 class Texture;
 
+
+//Declaration of Graphics Engine Subsystem.
 class Graphics_System : public Engine_System
 {
 private:
-	std::vector<char> m_default_font;
-	std::vector<unsigned char> m_screen_pixels; //APPARENTLY stored in BGRA, take that into account allways
+	std::vector<char> m_default_font; //Default binary font location in memory
+	std::vector<unsigned char> m_screen_pixels; //APPARENTLY stored in BGRA, take that into account always
 
 	void load_default_font(std::string font_location);
 
 public:
-	std::vector<Texture*> m_texture_holder;
+	std::vector<Texture*> m_texture_holder; //List of all loaded textures.
 
 	const unsigned int m_screen_width = 320;
 	const unsigned int m_screen_height = 200;
 
-	const unsigned int m_pixel_scale = 4;
+	const unsigned int m_pixel_scale = 4; 	//When rendering, will draw a square of m_pixel_scale by m_pixel_scale instead of 1x1 pixels
+											//Basically zooms in on pixel art and is pixel perfect, side effect, 320x200 game will be on a MUCH bigger screen.	
 
 	const unsigned int m_screen_surface_width = m_screen_width * m_pixel_scale;
 	const unsigned int m_screen_surface_height = m_screen_height * m_pixel_scale;
@@ -53,10 +75,10 @@ public:
 	bool m_show_fps = true;
 	bool m_show_frame_time = true;
 
-	SDL_Window* m_window;
-	SDL_Renderer* m_renderer;
+	SDL_Window* m_window; //SDL window of the game.
+	SDL_Renderer* m_renderer; //SDL renderer of the game.
 
-	SDL_Texture* m_screen_surface;
+	SDL_Texture* m_screen_surface;	//Texture holding the FINAL screen surface. (Dont mess with this.)
 
 	Graphics_System(Engine * engine);
 	~Graphics_System();
@@ -85,13 +107,14 @@ public:
 	void blit_texture(const Texture* to_render, const Point2& dst);
 };
 
+//Declaration of what is a texture
 class Texture
 {
 private:
-	Color m_color_mod = {255, 255, 255, 255};
+	Color m_color_mod = {255, 255, 255, 255}; //Color and alpha tint of the texture.
 public:
-	SDL_Surface* m_surface = nullptr;
-	SDL_Texture* m_texture = nullptr;
+	SDL_Surface* m_surface = nullptr; //Pixel surface of the Texture.
+	SDL_Texture* m_texture = nullptr; //The actual texture.
 
 	Recti m_rect = {{0, 0}, {0, 0}};
 	
@@ -114,13 +137,13 @@ public:
 	Texture(std::string file_location, Graphics_System& g_system);
 	~Texture();
 };
-
+//Some default colors
 const Color COLOR_RED = {255, 0, 0, 255};
 const Color COLOR_GREEN = {0, 255, 0, 255};
 const Color COLOR_BLUE = {0, 0, 255, 255};
 const Color COLOR_BLACK = {0, 0, 0, 255};
 const Color COLOR_WHITE = {255, 255, 255, 255};
-
+//while I dont make a cursor texture, here is a cursor.
 const std::vector<char> CURSOR 	     = 	{0,		 	 0,          0, 0b00011000, 0b00011000,          0,          0, 0};
 const std::vector<char> CURSOR_HOVER = 	{0, 0b00100100, 0b01100110, 0b00011000, 0b00011000, 0b01100110, 0b00100100, 0};
 const std::vector<char> CURSOR_CLICK = 	{0, 0b00100100, 0b01100110,          0,          0, 0b01100110, 0b00100100, 0};

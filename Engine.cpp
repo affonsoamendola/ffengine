@@ -1,8 +1,8 @@
 /*  
   Copyright Affonso Amendola 2019
 
-  Fofonso's SDL Engine, version 2.1
-
+  Fofonso's SDL Engine
+  
   This is part of my SDL Game/Software Engine,
 
   Distributed under GPLv3, use it to your hearts content,

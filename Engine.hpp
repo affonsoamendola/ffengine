@@ -1,3 +1,16 @@
+/*  
+  Copyright Affonso Amendola 2019
+
+  Fofonso's SDL Engine
+
+  This is part of my SDL Game/Software Engine,
+
+  Distributed under GPLv3, use it to your hearts content,
+  just remember the number one rule:
+
+  Be Excellent to Each Other.
+*/
+
 #pragma once
 
 #include "Graphics.hpp"
