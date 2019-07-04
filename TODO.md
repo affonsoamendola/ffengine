@@ -1,12 +1,18 @@
-# TODO LIST:
+# TODO LIST
 
-## Engine.cpp/hpp:
-	*Better way of counting m_time.
-	*Does delta_time() actually work as intended?
+## Engine.cpp/hpp
+	Better way of counting m_time.
+	Does delta_time() actually work as intended?
 
-## Engine_System.cpp/hpp:
-	*Add base engine system functionalities
+## Engine_System.cpp/hpp
+	Add base engine system functionalities
 
 ## Graphics.cpp/hpp
-	*Make a proper cursor texture.
-	*Make a better texture holder system.
+	Make a proper cursor texture.
+	Make a better texture holder system.
+	
+## Documentation
+	Finish Graphics.cpp
+	GUI.cpp/hpp
+	Input.cpp/hpp
+	Main.cpp
