@@ -147,3 +147,18 @@ const Color COLOR_WHITE = {255, 255, 255, 255};
 const std::vector<char> CURSOR 	     = 	{0,		 	 0,          0, 0b00011000, 0b00011000,          0,          0, 0};
 const std::vector<char> CURSOR_HOVER = 	{0, 0b00100100, 0b01100110, 0b00011000, 0b00011000, 0b01100110, 0b00100100, 0};
 const std::vector<char> CURSOR_CLICK = 	{0, 0b00100100, 0b01100110,          0,          0, 0b01100110, 0b00100100, 0};
+
+
+const Recti square_top_left = 	Recti(0, 0, 1, 1);
+const Recti square_top =		Recti(0, 0, 1, 1).move(Point2(1, 0));
+const Recti square_top_right = 	Recti(0, 0, 1, 1).move(Point2(2, 0));
+const Recti square_left = 		Recti(0, 0, 1, 1).move(Point2(0, 1));
+const Recti square_center =		Recti(0, 0, 1, 1).move(Point2(1, 1));
+const Recti square_right = 		Recti(0, 0, 1, 1).move(Point2(2, 1));
+const Recti square_bot_left =	Recti(0, 0, 1, 1).move(Point2(0, 2));
+const Recti square_bot = 		Recti(0, 0, 1, 1).move(Point2(1, 2));
+const Recti square_bot_right = 	Recti(0, 0, 1, 1).move(Point2(2, 2));
+
+void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size, 
+						const Texture* window_texture_holder,
+						Graphics_System* graphics_system);

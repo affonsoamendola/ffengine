@@ -37,17 +37,6 @@ public:
 	void virtual on_click(){}
 };
 
-class GUI_Window : public GUI_Object
-{
-private:
-	Recti m_rect;
-public:
-	void render();
-
-	GUI_Window(const Recti& local_rect, const Point2& position, GUI_System* parent_system);
-	~GUI_Window(){};
-};
-
 class GUI_System : public Engine_System
 {
 public:
