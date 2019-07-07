@@ -15,11 +15,11 @@ private:
 	bool m_is_base = false;
 public:
 	GUI_System* m_parent_system = nullptr; 
+	Graphics_System* m_graphics_system = nullptr;
 
 	std::vector<GUI_Object*> m_elements;
 	GUI_Object* m_parent_object = nullptr;
 
-	Point2 m_global_position = {0, 0};
 	Point2 m_local_position = {0, 0};
 
 	GUI_Object(const Point2& position, GUI_System* parent_system);
@@ -28,6 +28,10 @@ public:
 	~GUI_Object();
 
 	GUI_Object * get_base();
+	Point2 get_global_position();
+
+	void set_parent(GUI_Object * parent_object){this->m_parent_object = parent_object;}
+	void add_child(GUI_Object * child_object){this->m_elements.push_back(child_object);}
 
 	void virtual render(){printf("RENDERING OBJECT\n");}
 

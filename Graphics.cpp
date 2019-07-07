@@ -145,6 +145,9 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 	//Loads the default binary font.
 	this->load_default_font("8x8Font.fnt");
 
+	//Loads the tiny text font.
+	this->load_tiny_font("4x6Font.png");
+
 	//Loads fallback texture, Dopefish Lives, Hail Carmack.
 	this->load_texture("dopefish.png");
 
@@ -153,6 +156,8 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 
 Graphics_System::~Graphics_System()
 {
+	delete this->m_tiny_text_font;
+
 	//Free all textures
 	for(int i = 0; i < this->m_texture_holder.size(); i++)
 	{
@@ -169,6 +174,11 @@ Graphics_System::~Graphics_System()
 void Graphics_System::load_default_font(string font_location)
 {
 	load_bin_file(font_location, &this->m_default_font);
+}
+
+void Graphics_System::load_tiny_font(string font_location)
+{
+	this->m_tiny_text_font = new Texture(font_location, *this);
 }
 
 //update before rendering
@@ -292,6 +302,22 @@ void Graphics_System::draw_char(unsigned int x, unsigned int y, char character, 
 	this->draw_binary_image(x, y, 8, 8, std::vector<char>(this->m_default_font.begin()+offset, this->m_default_font.begin()+offset+8), color);
 }
 
+void Graphics_System::draw_tiny_char(unsigned int x, unsigned int y, char character, Color color)
+{
+	unsigned int offset = (unsigned int)((character-32));
+
+	unsigned int tex_x = offset % 32;
+	unsigned int tex_y = offset / 32;
+
+	Color original_mod = this->m_tiny_text_font->get_color_mod();
+
+	this->m_tiny_text_font->set_color_mod(color);
+
+	this->blit_texture(this->m_tiny_text_font, Recti({4, 6}).move(Point2(tex_x * 4, tex_y * 6)), Point2(x, y));
+
+	this->m_tiny_text_font->set_color_mod(original_mod);
+}
+
 void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_string, Color color)
 {
 	for(int i = 0; i < char_string.length(); i++)
@@ -316,6 +342,32 @@ void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Co
 	sprintf(buffer, "%g", value);
 
 	this->draw_text(x, y, string(buffer), color);
+}
+
+void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color)
+{
+	for(int i = 0; i < char_string.length(); i++)
+	{
+		this->draw_tiny_char(x + 4 * i, y, char_string[i], color);
+	}
+}
+
+void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, int value, Color color)
+{
+	char buffer[32];
+
+	sprintf(buffer, "%d", value);
+
+	this->draw_tiny_text(x, y, string(buffer), color);
+}
+
+void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, double value, Color color)
+{
+	char buffer[32];
+
+	sprintf(buffer, "%g", value);
+
+	this->draw_tiny_text(x, y, string(buffer), color);
 }
 
 void Graphics_System::blit_texture(const Texture* to_render, const Recti& src, const Point2& dst)

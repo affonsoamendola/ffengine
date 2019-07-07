@@ -10,8 +10,8 @@ GUI_System::GUI_System(	Engine * parent_engine)
 							m_gui_texture("gui.png", parent_engine->m_graphics)
 
 {
-
-	new GUI_Window(Recti({32, 32}), Point2({20, 0}), this);
+	GUI_Window* Test = new GUI_Window(Recti({32, 32}), Point2({20, 0}), this);
+	new GUI_Window_Title(Test, "Testing Window Title", 10, this);
 }
 
 GUI_System::~GUI_System()
@@ -39,10 +39,11 @@ GUI_Object::GUI_Object(	const Point2& position, GUI_System* parent_system)
 	this->m_is_base = true;
 
 	this->m_parent_system = parent_system;
+	this->m_graphics_system = &this->m_parent_system->m_parent_engine->m_graphics;
 
 	this->m_parent_system->m_object_list.push_back(this);
 
-	this->m_global_position = position;
+	this->m_local_position = position;
 }
 
 GUI_Object::GUI_Object(	GUI_Object* parent_object, const Point2& local_position, GUI_System* parent_system)
@@ -53,9 +54,9 @@ GUI_Object::GUI_Object(	GUI_Object* parent_object, const Point2& local_position,
 	this->m_parent_object->m_elements.push_back(this);
 
 	this->m_parent_system = parent_system;
+	this->m_graphics_system = &this->m_parent_system->m_parent_engine->m_graphics;
 
 	this->m_local_position = local_position;
-	this->m_global_position = this->m_parent_object->m_global_position + local_position;
 }
 
 GUI_Object::~GUI_Object()
@@ -76,6 +77,21 @@ GUI_Object* GUI_Object::get_base()
 	}
 
 	return current_object;
+}
+
+Point2 GUI_Object::get_global_position()
+{
+	Point2 current_position(0, 0);
+	
+	GUI_Object* current_object = this;
+	
+	while(!(current_object->m_is_base))
+	{
+		current_position += current_object->m_local_position;
+		current_object = current_object->m_parent_object;
+	}
+
+	return current_position;
 }
 
 

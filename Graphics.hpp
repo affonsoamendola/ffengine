@@ -54,10 +54,10 @@ private:
 	std::vector<char> m_default_font; //Default binary font location in memory
 	std::vector<unsigned char> m_screen_pixels; //APPARENTLY stored in BGRA, take that into account always
 
-	void load_default_font(std::string font_location);
-
 public:
 	std::vector<Texture*> m_texture_holder; //List of all loaded textures.
+
+	Texture * m_tiny_text_font;
 
 	const unsigned int m_screen_width = 320;
 	const unsigned int m_screen_height = 200;
@@ -94,14 +94,23 @@ public:
 
 	void load_texture(std::string image_location);
 
+	void load_default_font(std::string font_location);
+	void load_tiny_font(std::string font_location);
+
 	void draw_cursor();
 
 	void draw_binary_image(unsigned int x, unsigned int y, unsigned int size_x, unsigned int size_y, std::vector<char> image_location, Color color);
+	
 	void draw_char(unsigned int x, unsigned int y, char character, Color color);
+	void draw_tiny_char(unsigned int x, unsigned int y, char character, Color color);
 
 	void draw_text(unsigned int x, unsigned int y, std::string char_string, Color color);
 	void draw_text(unsigned int x, unsigned int y, int value, Color color);
 	void draw_text(unsigned int x, unsigned int y, double value, Color color);
+
+	void draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color);
+	void draw_tiny_text(unsigned int x, unsigned int y, int value, Color color);
+	void draw_tiny_text(unsigned int x, unsigned int y, double value, Color color);
 
 	void blit_texture(const Texture* to_render, const Recti& src, const Point2& dst);
 	void blit_texture(const Texture* to_render, const Point2& dst);
