@@ -53,7 +53,6 @@ class Graphics_System : public Engine_System
 private:
 	std::vector<char> m_default_font; //Default binary font location in memory
 	std::vector<unsigned char> m_screen_pixels; //APPARENTLY stored in BGRA, take that into account always
-
 public:
 	std::vector<Texture*> m_texture_holder; //List of all loaded textures.
 
@@ -112,6 +111,9 @@ public:
 	void draw_tiny_text(unsigned int x, unsigned int y, int value, Color color);
 	void draw_tiny_text(unsigned int x, unsigned int y, double value, Color color);
 
+	void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size, 
+							const Texture* window_texture_holder);
+
 	void blit_texture(const Texture* to_render, const Recti& src, const Point2& dst);
 	void blit_texture(const Texture* to_render, const Point2& dst);
 };
@@ -120,6 +122,7 @@ public:
 class Texture
 {
 private:
+
 	Color m_color_mod = {255, 255, 255, 255}; //Color and alpha tint of the texture.
 public:
 	SDL_Surface* m_surface = nullptr; //Pixel surface of the Texture.
@@ -143,9 +146,32 @@ public:
 	}
 	inline Color get_color_mod(){return this->m_color_mod;}
 
+	Texture get_sub_texture(Recti rect);
+
 	Texture(std::string file_location, Graphics_System& g_system);
 	~Texture();
 };
+
+struct Sprite
+{
+	Texture* m_texture_sheet;
+
+	Color m_color_mod = {255, 255, 255, 255}; 
+
+	Recti m_texture_sheet_rect;
+
+	inline void set_color_mod(Color color)
+	{
+		this->m_color_mod.r = color.r;
+		this->m_color_mod.g = color.g;
+		this->m_color_mod.b = color.b;
+	}
+	inline Color get_color_mod(){return this->m_color_mod;}
+
+	Sprite(Texture* m_texture_sheet, const Recti& m_texture_sheet_rect);
+	~Sprite();
+};
+
 //Some default colors
 const Color COLOR_RED = {255, 0, 0, 255};
 const Color COLOR_GREEN = {0, 255, 0, 255};
@@ -157,7 +183,6 @@ const std::vector<char> CURSOR 	     = 	{0,		 	 0,          0, 0b00011000, 0b000
 const std::vector<char> CURSOR_HOVER = 	{0, 0b00100100, 0b01100110, 0b00011000, 0b00011000, 0b01100110, 0b00100100, 0};
 const std::vector<char> CURSOR_CLICK = 	{0, 0b00100100, 0b01100110,          0,          0, 0b01100110, 0b00100100, 0};
 
-
 const Recti square_top_left = 	Recti(0, 0, 1, 1);
 const Recti square_top =		Recti(0, 0, 1, 1).move(Point2(1, 0));
 const Recti square_top_right = 	Recti(0, 0, 1, 1).move(Point2(2, 0));
@@ -168,6 +193,3 @@ const Recti square_bot_left =	Recti(0, 0, 1, 1).move(Point2(0, 2));
 const Recti square_bot = 		Recti(0, 0, 1, 1).move(Point2(1, 2));
 const Recti square_bot_right = 	Recti(0, 0, 1, 1).move(Point2(2, 2));
 
-void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size, 
-						const Texture* window_texture_holder,
-						Graphics_System* graphics_system);

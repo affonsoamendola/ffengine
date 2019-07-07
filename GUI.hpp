@@ -29,6 +29,7 @@ public:
 
 	GUI_Object * get_base();
 	Point2 get_global_position();
+	Point2 get_global_position(const Point2& local_position);
 
 	void set_parent(GUI_Object * parent_object){this->m_parent_object = parent_object;}
 	void add_child(GUI_Object * child_object){this->m_elements.push_back(child_object);}

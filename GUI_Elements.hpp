@@ -10,11 +10,13 @@
 class GUI_Window : public GUI_Object
 {
 public:
-	Recti m_rect;
+	Point2 m_size;
 
 	void render();
 
-	GUI_Window(const Recti& local_rect, const Point2& position, GUI_System* parent_system);
+	Recti get_rect();
+
+	GUI_Window(const Recti& local_rect, GUI_System* parent_system);
 	~GUI_Window(){};
 };
 
@@ -24,11 +26,22 @@ private:
 	int m_length;
 	std::string m_text;
 
-	Point2 m_text_location;
-
+	Point2 m_local_text_location;
 public:
 	void render();
 
 	GUI_Window_Title(GUI_Window* parent_window, std::string text, int length, GUI_System* parent_system);
 	~GUI_Window_Title(){};
+};
+
+
+class GUI_Button : public GUI_Object
+{
+public:
+	Sprite* current_spr;
+	Sprite  idle_spr;
+	Sprite  on_hover_spr;
+	Sprite  on_click_spr;
+
+	void render();
 };

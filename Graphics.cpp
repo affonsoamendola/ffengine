@@ -28,6 +28,8 @@
 
 using namespace std;
 
+//TEXTURE CLASS MEMBER FUNCTIONS:
+
 //Creates a new Texture object from a file location.
 Texture::Texture(string file_location, Graphics_System& g_system)
 {
@@ -66,6 +68,9 @@ Texture::~Texture()
 	//Frees the surface that was in heap.
 	SDL_FreeSurface(this->m_surface);
 }
+
+//--------------------------------------------
+//GRAPHICS SYSTEM CLASS MEMBER FUNCTIONS
 
 //Creates and initializes a new Graphics Subsystem for the parent engine.
 Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_engine)
@@ -391,9 +396,8 @@ void Graphics_System::blit_texture(const Texture* to_render, const Point2& dst)
 	this->blit_texture(to_render, to_render->m_rect, dst);
 }
 
-void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size, 
-						const Texture* window_texture_holder,
-						Graphics_System* graphics_system)
+void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& seg_size, 
+										const Texture* window_texture_holder)
 {
 	int window_width = window_rect.width() / seg_size[0];
 	int window_height = window_rect.height() / seg_size[1];
@@ -420,32 +424,32 @@ void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size,
 			else if(h == window_height-1)						current_position = Point2(window_rect.p0()[0] + w*seg_size[0], window_rect.p1()[1] - seg_size[1]);
 			else 												current_position = window_rect.p0() + Point2(w*seg_size[0], h*seg_size[1]);
 			
-			graphics_system->blit_texture(	window_texture_holder,
-											current_square * seg_size,
-											current_position);
+			this->blit_texture(	window_texture_holder,
+								current_square * seg_size,
+								current_position);
 
 			if(w == window_width-1 && h == window_height-1)
 			{
 				current_position = window_rect.p0() + Point2(w*seg_size[0], h*seg_size[1]);
 				current_square = Recti(square_center.p0() * seg_size, square_center.p0() * seg_size + Point2(window_rect.width() % seg_size[0], window_rect.height() % seg_size[1])  );
 				
-				graphics_system->blit_texture(	window_texture_holder,
-												current_square,
-												current_position);
+				this->blit_texture(	window_texture_holder,
+									current_square,
+									current_position);
 
 				current_position = window_rect.p0() + Point2(window_rect.width() - seg_size[0], h*seg_size[1]);
 				current_square = Recti(square_right.p0() * seg_size, square_right.p0() * seg_size + Point2(seg_size[0], window_rect.height() % seg_size[1])  );
 				
-				graphics_system->blit_texture(	window_texture_holder,
-								current_square,
-								current_position);
+				this->blit_texture(	window_texture_holder,
+									current_square,
+									current_position);
 
 				current_position = window_rect.p0() + Point2(w*seg_size[0], window_rect.height() - seg_size[1]);
 				current_square = Recti(square_bot.p0() * seg_size, square_bot.p0() * seg_size + Point2(window_rect.width() % seg_size[0], seg_size[1])  );
 				
-				graphics_system->blit_texture(	window_texture_holder,
-								current_square,
-								current_position);
+				this->blit_texture(	window_texture_holder,
+									current_square,
+									current_position);
 			}
 			else if(w == window_width-1)
 			{
@@ -456,9 +460,9 @@ void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size,
 				else
 					current_square = Recti(square_center.p0() * seg_size, square_center.p0() * seg_size + Point2(window_rect.width() % seg_size[0], seg_size[1])  );
 			
-				graphics_system->blit_texture(	window_texture_holder,
-												current_square,
-												current_position);
+				this->blit_texture(	window_texture_holder,
+									current_square,
+									current_position);
 			}		
 			else if(h == window_height-1)
 			{
@@ -469,10 +473,12 @@ void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size,
 				else
 					current_square = Recti(square_center.p0() * seg_size, square_center.p0() * seg_size + Point2(seg_size[0], window_rect.height() % seg_size[1])  );
 
-				graphics_system->blit_texture(	window_texture_holder,
-												current_square,
-												current_position);
+				this->blit_texture(	window_texture_holder,
+									current_square,
+									current_position);
 			}		
 		}
 	}
 }
+
+//-------------------------------------------
