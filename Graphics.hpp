@@ -46,7 +46,6 @@ public:
 
 class Texture;
 
-
 //Declaration of Graphics Engine Subsystem.
 class Graphics_System : public Engine_System
 {
