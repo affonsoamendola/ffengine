@@ -32,6 +32,10 @@
 
 using namespace std;
 
+//Testing wave playing
+Sample test_sample(440);
+Mix_Chunk chunk;
+
 //AUDIO SYSTEM MEMBER FUNCTIONS:
 //Creates audio subsystem.
 Audio_System::Audio_System(Engine * parent_engine)
@@ -56,6 +60,14 @@ Audio_System::Audio_System(Engine * parent_engine)
 	}
 
 	cout << "Done." << std::endl;
+
+	Square_Wave_Gen(	&test_sample,
+						255, 30,
+						1, 0.);
+	
+	chunk = test_sample.get_chunk();
+
+	Mix_PlayChannel(-1, &chunk, -1);
 }
 
 //Deletes audio subsystem.
@@ -69,44 +81,43 @@ void Audio_System::update()
 {}
 
 //------------------------------------------
+
 Sample::Sample(unsigned int sample_size)
-{}
+{
+	this->m_phased_sample_size = sample_size;
+	this->m_total_sample_size = sample_size + 2;
+	this->m_allocated_memory = static_cast<unsigned char*>(malloc(sizeof(unsigned char) * (sample_size+2) * 2));
+}
+
 Sample::~Sample()
-{}
+{
+	free(this->m_allocated_memory);
+}
 
 Synth::Synth(unsigned int sample_size)
-			: m_current_sample(sample_size)
-{
-}
+{}
 
 Synth::~Synth()
 {}
 
 Oscillator::Oscillator(unsigned int sample_size)
-{
-	this->m_allocated_memory = static_cast<unsigned char *>(malloc(sample_size * 2));
-	this->m_sample_size = sample_size;
-}
+{}
 
 Oscillator::~Oscillator()
-{
-	free(this->m_allocated_memory);
-}
+{}
 
-void Square_Wave_Gen(	unsigned char* sample_location,
-						int sample_size,
+void Square_Wave_Gen(	Sample* to_fill,
 						unsigned char max, unsigned char min,
 						int frequency, float phase_shift)
 {
-	unsigned int wave_size = static_cast<unsigned int>((sample_size/frequency)/2);
-	unsigned int phase_shift_sample = static_cast<unsigned int>(phase_shift * wave_size * 2);
+	unsigned int wave_size = static_cast<unsigned int>((to_fill->m_phased_sample_size/frequency)/2);
+	
+	to_fill->m_oscillation_size = (to_fill->m_phased_sample_size/frequency);
+	to_fill->m_phase_shift = phase_shift;
 
-	printf("WAVE SIZE %u\n", wave_size);
-	printf("phase_shift_sample %u\n", phase_shift_sample);
-
-	for(int i = 0; i < frequency-1; i++)
+	for(int i = 0; i < frequency + 2 ; i++)
 	{
-		memset(sample_location + i * wave_size * 2 + phase_shift_sample, max, wave_size);
-		memset(sample_location + wave_size + i * wave_size * 2 + phase_shift_sample, min, wave_size);
+		memset(to_fill->get_raw_memory() + i * wave_size * 2, max, wave_size);
+		memset(to_fill->get_raw_memory() + wave_size + i * wave_size * 2, min, wave_size);
 	}
 }	

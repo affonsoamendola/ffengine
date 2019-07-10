@@ -32,9 +32,35 @@ public:
 
 class Sample
 {
+	unsigned char * m_allocated_memory;
 public:
+	unsigned int m_phased_sample_size;
+	unsigned int m_total_sample_size;
+
+	unsigned int m_oscillation_size = 0;
+
+	float m_phase_shift = 1.;
+
 	Sample(unsigned int sample_size);
 	~Sample();
+
+	inline unsigned char * get_raw_memory(){return m_allocated_memory;};
+	inline unsigned char * get_phase_shifted_memory(){return Phase_Shift(this->m_phase_shift);};
+
+	Mix_Chunk get_chunk()
+	{
+		Mix_Chunk new_chunk;
+		
+		new_chunk.allocated = 0;
+		new_chunk.abuf = this->get_phase_shifted_memory();
+		new_chunk.alen = this->m_phased_sample_size;
+		new_chunk.volume = 128;
+
+		return new_chunk;
+	}
+
+	inline unsigned char * Phase_Shift(float amount) 
+	{return m_allocated_memory + static_cast<int>(this->m_oscillation_size * amount);};
 };
 
 class Synth
@@ -44,9 +70,6 @@ public:
 	~Synth();
 
 	Mix_Chunk m_current_chunk;
-
-	Sample m_current_sample;
-	unsigned int m_sample_size;	
 };
 
 enum OSCILLATOR_TYPE
@@ -60,8 +83,6 @@ enum OSCILLATOR_TYPE
 
 class Oscillator
 {
-	unsigned char * m_allocated_memory;
-	unsigned int m_sample_size;
 	float phase_shift;
 
 	OSCILLATOR_TYPE Oscillator_Type;
@@ -74,7 +95,6 @@ public:
 	unsigned char * Get_Data();
 };
 
-void Square_Wave_Gen(	unsigned char* sample_location,
-						int sample_size,
+void Square_Wave_Gen(	Sample* to_fill,
 						unsigned char max, unsigned char min,
 						int frequency, float phase_shift);

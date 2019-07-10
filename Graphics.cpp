@@ -223,8 +223,6 @@ void Graphics_System::load_tiny_font(string font_location)
 //update before rendering
 void Graphics_System::update(){};
 
-//Testing wave drawing
-unsigned char test_wave[100];
 
 //Main render function, this clears the screen and draws things to it.
 void Graphics_System::render()
@@ -233,13 +231,6 @@ void Graphics_System::render()
 
 	//Calls GUI Subsystem Render Function, draws the GUI
 	this->m_parent_engine->m_gui.render();
-
-	Square_Wave_Gen(	test_wave,
-						40,
-						255, 30,
-						4, 0.5);
-
-	this->draw_wave(test_wave, Point2(10, 10), 20, 40, Color(255, 255, 0));
 
 	//Draws the cursor
 	if(this->m_show_mouse) this->draw_cursor();
