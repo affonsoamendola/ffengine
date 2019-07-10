@@ -1,4 +1,16 @@
 #pragma once
+/*  
+  Copyright Affonso Amendola 2019
+
+  Fofonso's Standard Library
+
+  This is part of my standard library of functions and stuff.
+
+  Distributed under GPLv3, use it to your hearts content,
+  just remember the number one rule:
+
+  Be Excellent to Each Other.
+*/
 
 //Just your standard constants header
 

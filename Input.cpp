@@ -1,22 +1,30 @@
+/*  
+  Copyright Affonso Amendola 2019
+
+  Fofonso's SDL Engine
+
+  This is part of my SDL Game/Software Engine,
+
+  Distributed under GPLv3, use it to your hearts content,
+  just remember the number one rule:
+
+  Be Excellent to Each Other.
+*/
 #include "SDL2/SDL.h"
 
 #include "Input.hpp"
 #include "Engine.hpp"
 
+//INPUT SYSTEM CLASS MEMBER FUNCTIONS:
+//Creates Input Subsystem.
 Input_System::Input_System(Engine * parent_engine) : Engine_System(parent_engine)
 {}
 
+//Called once every frame, updates key states, and does polling on keyboard events.
 void Input_System::update()
 {
 	this->m_keyboard_state 	=	SDL_GetKeyboardState(NULL); 
 	this->m_mouse_state 	= 	SDL_GetMouseState(&this->m_mouse_x, &this->m_mouse_y);
-
-	/*
-	if(keystate[SDL_SCANCODE_UP]) this->m_parent_engine->m_raymarcher.m_camera_position.z += 1. * this->m_parent_engine->delta_time();
-	if(keystate[SDL_SCANCODE_DOWN]) this->m_parent_engine->m_raymarcher.m_camera_position.z -= 1. * this->m_parent_engine->delta_time();
-	if(keystate[SDL_SCANCODE_RIGHT]) this->m_parent_engine->m_raymarcher.m_camera_position.x += 1. * this->m_parent_engine->delta_time();
-	if(keystate[SDL_SCANCODE_LEFT]) this->m_parent_engine->m_raymarcher.m_camera_position.x -= 1. * this->m_parent_engine->delta_time();
-	*/
 
 	while(SDL_PollEvent(&(this->m_event)))
 	{
@@ -41,3 +49,4 @@ void Input_System::update()
 		}
 	}
 }
+//-------------------------

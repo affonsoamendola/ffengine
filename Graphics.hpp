@@ -1,3 +1,4 @@
+#pragma once
 /*  
   Copyright Affonso Amendola 2019
 
@@ -14,8 +15,6 @@
 //TOOD:
 //Make a proper cursor texture.
 //Make a better texture holder system.
-
-#pragma once
 
 #include <string>
 #include <memory>
@@ -44,6 +43,7 @@ public:
 	Color(unsigned char t_r, unsigned char t_g, unsigned char t_b, unsigned char t_a) : r(t_r), g(t_g), b(t_b), a(t_a) {}
 };
 
+//Forward dec, Graphics_System needs to know what a Texture is.
 class Texture;
 
 //Declaration of Graphics Engine Subsystem.
@@ -151,6 +151,7 @@ public:
 	~Texture();
 };
 
+//Dec of what is a sprite, need to mess around more with this, currently I dont think this is used.
 struct Sprite
 {
 	Texture* m_texture_sheet;
@@ -177,11 +178,13 @@ const Color COLOR_GREEN = {0, 255, 0, 255};
 const Color COLOR_BLUE = {0, 0, 255, 255};
 const Color COLOR_BLACK = {0, 0, 0, 255};
 const Color COLOR_WHITE = {255, 255, 255, 255};
+
 //while I dont make a cursor texture, here is a cursor.
 const std::vector<char> CURSOR 	     = 	{0,		 	 0,          0, 0b00011000, 0b00011000,          0,          0, 0};
 const std::vector<char> CURSOR_HOVER = 	{0, 0b00100100, 0b01100110, 0b00011000, 0b00011000, 0b01100110, 0b00100100, 0};
 const std::vector<char> CURSOR_CLICK = 	{0, 0b00100100, 0b01100110,          0,          0, 0b01100110, 0b00100100, 0};
 
+//Definitions of the 9 segments of the rect for draw_9_seg
 const Recti square_top_left = 	Recti(0, 0, 1, 1);
 const Recti square_top =		Recti(0, 0, 1, 1).move(Point2(1, 0));
 const Recti square_top_right = 	Recti(0, 0, 1, 1).move(Point2(2, 0));

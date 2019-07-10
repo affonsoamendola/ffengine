@@ -1,4 +1,16 @@
 #pragma once
+/*  
+  Copyright Affonso Amendola 2019
+
+  Fofonso's SDL Engine
+
+  This is part of my SDL Game/Software Engine,
+
+  Distributed under GPLv3, use it to your hearts content,
+  just remember the number one rule:
+
+  Be Excellent to Each Other.
+*/
 
 #include "Engine_System.hpp"
 #include "Graphics.hpp"
@@ -31,8 +43,11 @@ public:
 	Point2 get_global_position();
 	Point2 get_global_position(const Point2& local_position);
 
-	void set_parent(GUI_Object * parent_object){this->m_parent_object = parent_object;}
-	void add_child(GUI_Object * child_object){this->m_elements.push_back(child_object);}
+	//Sets this objects parent.
+	inline void set_parent(GUI_Object * parent_object){this->m_parent_object = parent_object;}
+	
+	//Adds an object to this objects children list.
+	inline void add_child(GUI_Object * child_object){this->m_elements.push_back(child_object);}
 
 	void virtual render(){printf("RENDERING OBJECT\n");}
 

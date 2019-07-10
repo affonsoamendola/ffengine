@@ -23,6 +23,7 @@
 
 class Audio_System : public Engine_System
 {
+public:
 	Audio_System(Engine * parent_engine);
 	~Audio_System();
 

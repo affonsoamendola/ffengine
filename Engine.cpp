@@ -16,9 +16,11 @@
 #include "Engine.hpp"
 #include "SDL2/SDL.h"
 
-//TODO:
-//Better way of counting m_time.
-//Does delta_time() actually work as intended?
+/*
+    TODO:
+    Better way of counting m_time.
+    Does delta_time() actually work as intended, i.e. the time between the last two frames?
+*/
 
 //How many frames to do the average framerate counter.
 #define AVERAGE_FRAME_T_SAMPLING 60
@@ -31,9 +33,9 @@ using namespace std;
 Engine::Engine()
 	:	m_graphics(this),
 		m_input(this),
-		m_gui(this)
-{
-}
+		m_gui(this),
+    m_audio(this)
+{}
 
 //Vector holding the last AVERAGE_FRAME_T_SAMPLING number of frametimes, to calculate the average framerate.
 vector<double> average_frame_time = vector<double>(AVERAGE_FRAME_T_SAMPLING, 0.);
@@ -51,6 +53,7 @@ void Engine::update()
   this->m_graphics.update();
   this->m_input.update();
   this->m_gui.update();
+  this->m_audio.update();
 
   //The only function that should have a render() is m_graphics, think of it as a separate update
   //On earlier versions, every render function ran on update() but I tought it would be best to keep them separate

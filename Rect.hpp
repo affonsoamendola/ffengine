@@ -1,4 +1,16 @@
 #pragma once
+/*  
+	Copyright Affonso Amendola 2019
+
+	Fofonso's Standard Library
+
+	This is part of my standard library of functions and stuff.
+
+	Distributed under GPLv3, use it to your hearts content,
+	just remember the number one rule:
+
+	Be Excellent to Each Other.
+*/
 
 #include "Vector.hpp"
 
@@ -23,13 +35,18 @@ public:
 
 	void sort();
 
+	//Same as m_bound[0] and m_bound[1]
 	inline Vector2& v0(){return this->m_bounds[0];}
 	inline Vector2& v1(){return this->m_bounds[1];}
 
-	inline Vector2& pos(){return v0();};
-	inline Vector2 size(){return v1() - v0();};
+	//Returns position of upper left corner, that is, same as m_bounds[0]
+	inline Vector2& pos(){return this->m_bounds[0];};
+	//Returns a size vector, of the rect.
+	inline Vector2 size(){return this->m_bounds[1] - this->m_bounds[0];};
 
+	//Returns the width of the rect.
 	inline double width(){return this->m_bounds[1][0] - this->m_bounds[0][0];}
+	//Returns the height of the rect.
 	inline double height(){return this->m_bounds[1][1] - this->m_bounds[0][1];}
 
 	Rect scale(double amount) const;
@@ -56,18 +73,24 @@ public:
 
 	void sort();
 
+	//Same as m_bound[0] and m_bound[1]
 	inline Point2& p0(){return this->m_bounds[0];}
 	inline Point2& p1(){return this->m_bounds[1];}
-
+	//Const version, returns a copy of bounds[0or1], not a reference to it.
 	inline Point2 p0() const {return this->m_bounds[0];}
 	inline Point2 p1() const {return this->m_bounds[1];}
 
-	inline Point2& pos(){return p0();};
-	inline Point2 pos() const {return p0();};
+	//Returns position of upper left corner, that is, same as m_bounds[0]
+	inline Point2& pos(){return this->m_bounds[0];};
+	//Const version, returns a copy of bounds[0or1], not a reference to it.
+	inline Point2 pos() const {return this->m_bounds[0];};
 
+	//Returns a size vector, of the rect.
 	inline Point2 size() const {return p1() - p0();};
 
+	//Returns the width of the rect.
 	inline int width() const {return this->m_bounds[1][0] - this->m_bounds[0][0];}
+	//Returns the height of the rect.
 	inline int height() const {return this->m_bounds[1][1] - this->m_bounds[0][1];}
 
 	SDL_Rect to_SDL() const;
@@ -79,6 +102,7 @@ public:
 
 	void print() const;
 
+	//Multiplies both bounds by a Point.
 	inline Recti operator*(const Point2& point)
 	{	Recti new_rect(this->p0()*point, this->p1()*point);
 		return new_rect; }

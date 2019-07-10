@@ -10,7 +10,13 @@
 
   Be Excellent to Each Other.
 */
-
+/*
+	TODO:
+	Can I just write directly to the framebuffer to gain some speed?
+	Add font variants, change how m_default_font works, maybe turn it into an array of possible bitmapped fonts.
+	Add drawing functions of simple shapes, like lines, triangles, rectangles, polygons
+	Most draw functions use int x, and int y, make them use Point2's for consistency.
+*/
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -33,34 +39,34 @@
 using namespace std;
 
 //TEXTURE CLASS MEMBER FUNCTIONS:
-
 //Creates a new Texture object from a file location.
 Texture::Texture(string file_location, Graphics_System& g_system)
 {
-	//DEBUG.
-	cout << "Loading texture at: " << file_location << "..." << std::flush;
-	
-	this->m_surface = IMG_Load(file_location.c_str());
 	//Load texture
+	this->m_surface = IMG_Load(file_location.c_str());
+	
+	//Error handling
 	if(this->m_surface == nullptr)
 	{
 		SDL_Log("\nFailure opening image file: %s", SDL_GetError());
 		exit(1);
 	}
 
+	//Make a texture from surface, basically sends it to the GPU (I think?)
 	this->m_texture = SDL_CreateTextureFromSurface(g_system.m_renderer, this->m_surface);
 
+	//Error handling
 	if(this->m_texture == nullptr)
 	{
 		SDL_Log("\nFailure creating texture: %s", SDL_GetError());
 		exit(1);
 	}
 
-	cout << "Done." << std::endl;
-
+	//Define the bounds of this texture, from the surface bounds.
 	this->m_rect = Recti({0, 0}, Point2(this->m_surface->w, this->m_surface->h));
 
-	//Basic setups for SDL texture for color and alpha mods and blending
+	//Basic setups for SDL texture for color and alpha mods and blendin, if the system supports it.
+	//If the system doesnt support it, things will go very wrong.
 	if(SDL_SetTextureColorMod(this->m_texture, 255, 255, 255) == -1) 	SDL_Log("\nTexture Color Modulation Not Supported on this renderer");
 	if(SDL_SetTextureAlphaMod(this->m_texture, 255) == -1) 				SDL_Log("\nTexture Alpha Modulation Not Supported on this renderer");
 	SDL_SetTextureBlendMode(this->m_texture, SDL_BLENDMODE_BLEND);
@@ -75,11 +81,13 @@ Texture::~Texture()
 
 //--------------------------------------------
 //GRAPHICS SYSTEM CLASS MEMBER FUNCTIONS
-
 //Creates and initializes a new Graphics Subsystem for the parent engine.
 Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_engine)
 {
-	this->m_screen_pixels.reserve(this->m_screen_width * this->m_screen_height * 4); //Reserves the screen array.
+	//Reserve the memory needed for the framebuffer  (NOT REALLY the framebuffer, but its the screen 
+	//step before the actual screen, so its more like a pixel scaled version of the screen)
+	//Can I acctually just write to the framebuffer directly with SDL?, To get some speed?
+	this->m_screen_pixels.reserve(this->m_screen_width * this->m_screen_height * 4); 
 	this->m_default_font.reserve(768); //Reserves the binary font location.
 
 	cout << "Initting SDL..." << std::flush;
@@ -107,13 +115,14 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 	
 	cout << "Creating Window..." << std::flush;
 
-	//Creates window, wight size m_screen_surface width x height
+	//Creates window, with size m_screen_surface width x height
 	this->m_window = SDL_CreateWindow	(	"Fofonso's SDL Engine",
 											SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 											this->m_screen_surface_width, this->m_screen_surface_height,
 											SDL_WINDOW_SHOWN
 										);
 
+	//Error handling
 	if(m_window == NULL)
 	{
 		SDL_Log("\nProblem creating SDL Window: %s", SDL_GetError());
@@ -122,7 +131,7 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 
 	cout << "Done." << std::endl;
 
-	//Creates renderer
+	//Creates renderer (with the currently available renderer, should be opengl most of the times on linux)
 	this->m_renderer = SDL_CreateRenderer	( 	this->m_window,
 												-1,
 												SDL_RENDERER_ACCELERATED
@@ -130,6 +139,7 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 
 	cout << "Creating SDL Renderer..." << std::flush;
 
+	//Error handling
 	if(m_renderer == NULL)
 	{
 		SDL_Log("Problem creating SDL Renderer: %s", SDL_GetError());
@@ -160,11 +170,14 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 	//Loads fallback texture, Dopefish Lives, Hail Carmack.
 	this->load_texture("dopefish.png");
 
+	//Hide system cursor
 	SDL_ShowCursor(0);
 }
 
+//Destroy Graphics subsystem.
 Graphics_System::~Graphics_System()
 {
+	//free tiny_text_font, since it was on the heap.
 	delete this->m_tiny_text_font;
 
 	//Free all textures
@@ -180,11 +193,28 @@ Graphics_System::~Graphics_System()
 	SDL_Quit();
 }
 
+//Loads m_default font with the bin file at font_location, format of the bin file
+//is 8 bits representing each line of 8 pixels, 1bpp, beginning with character 20h
+//basically 8 lines of 8 bits representing each character, consecutively.
+//
+// Character ! (21h)
+// 00000000
+// 00011000
+// 00011000
+// 00011000
+// 00011000
+// 00000000
+// 00011000
+// 00011000
+// 
+// represented in bin file as 00000000 00011000 00011000 00011000 00011000 00000000 00011000 00011000
+// or (hex) 00 18 18 18 00 18 18
 void Graphics_System::load_default_font(string font_location)
 {
-	load_bin_file(font_location, &this->m_default_font);
+	load_bin_file(font_location, &this->m_default_font, 768);
 }
 
+//Loads the default tiny_font, as a texture Image, should do this with the other default font to unify them.
 void Graphics_System::load_tiny_font(string font_location)
 {
 	this->m_tiny_text_font = new Texture(font_location, *this);
@@ -193,11 +223,14 @@ void Graphics_System::load_tiny_font(string font_location)
 //update before rendering
 void Graphics_System::update(){};
 
+//Testing wave drawing
 unsigned char test_wave[100];
 
 //Main render function, this clears the screen and draws things to it.
 void Graphics_System::render()
 {
+//Put things that draw to screen between HERE:
+
 	//Calls GUI Subsystem Render Function, draws the GUI
 	this->m_parent_engine->m_gui.render();
 
@@ -213,12 +246,15 @@ void Graphics_System::render()
 	//Draws FPS Counter
 	if(this->m_show_fps) 
 		this->draw_text(this->m_screen_width - 40, 0, this->m_parent_engine->m_avg_fps, COLOR_RED);
-	//Draws FrameTime Counter
+	//Draws FrameTime Counter and Dropped frames counter.
 	if(this->m_show_frame_time)
 	{ 
 		this->draw_text(this->m_screen_width - 40, 8, this->m_parent_engine->m_avg_frame_time * 1000, COLOR_RED);
 		this->draw_text(this->m_screen_width - 40, 16, this->m_parent_engine->m_dropped_frames, COLOR_RED);
 	}
+
+//AND HERE.
+
 	//Flushes screen surface data to screen texture.
 	//m_screen_pixels -> m_screen_surface
     SDL_UpdateTexture	(	this->m_screen_surface,
@@ -233,14 +269,14 @@ void Graphics_System::render()
     //Shows on screen
     SDL_RenderPresent(this->m_renderer);
 
-
    	//Clears screen for next frame.
 	SDL_SetRenderDrawColor(this->m_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	
 	SDL_RenderClear(this->m_renderer);
 	this->clear_screen();
+
 }
 
+//Sets a pixel on screen of Color color
 void Graphics_System::set_pixel(unsigned int x, unsigned int y, Color color)
 {
 	//Sets a pixel on screen, does screen space clipping with this if.
@@ -298,28 +334,34 @@ void Graphics_System::draw_binary_image(unsigned int x, unsigned int y,
 	}
 }
 
+//Draw default cursor binary image.
 void Graphics_System::draw_cursor()
 {
 	const std::vector<char>* current_cursor;
 
+	//Changes cursor image if clicked (Kind of hackey atm)
 	if(this->m_parent_engine->m_input.m_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT))
 		current_cursor = &CURSOR_CLICK;
 	else
 		current_cursor = &CURSOR;
 
+	//Does the actual drawing
 	draw_binary_image(	(this->m_parent_engine->m_input.m_mouse_x / this->m_pixel_scale) - 4, 
 						(this->m_parent_engine->m_input.m_mouse_y / this->m_pixel_scale) - 4,
 						8, 8,
 						*current_cursor, COLOR_WHITE);
 }
 
+//Draws a char with the m_default_font (8x8) on screen at pos x,y with Color color
 void Graphics_System::draw_char(unsigned int x, unsigned int y, char character, Color color)
 {
+	//Change ASCII code into the actual image code, since the first char in the image is actually ASCII 20h
 	unsigned int offset = (unsigned int)((character-32) * 8);
 
 	this->draw_binary_image(x, y, 8, 8, std::vector<char>(this->m_default_font.begin()+offset, this->m_default_font.begin()+offset+8), color);
 }
 
+//Draws a char with the m_tiny_font (4x6) on screen at pos x,y with Color color
 void Graphics_System::draw_tiny_char(unsigned int x, unsigned int y, char character, Color color)
 {
 	unsigned int offset = (unsigned int)((character-32));
@@ -336,6 +378,7 @@ void Graphics_System::draw_tiny_char(unsigned int x, unsigned int y, char charac
 	this->m_tiny_text_font->set_color_mod(original_mod);
 }
 
+//Draws a string with m_default_font.
 void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_string, Color color)
 {
 	for(int i = 0; i < char_string.length(); i++)
@@ -344,6 +387,7 @@ void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_stri
 	}
 }
 
+//Draws an Int value with m_default_font
 void Graphics_System::draw_text(unsigned int x, unsigned int y, int value, Color color)
 {
 	char buffer[32];
@@ -353,6 +397,7 @@ void Graphics_System::draw_text(unsigned int x, unsigned int y, int value, Color
 	this->draw_text(x, y, string(buffer), color);
 }
 
+//Draws a Double with m_default_font
 void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Color color)
 {
 	char buffer[32];
@@ -362,6 +407,7 @@ void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Co
 	this->draw_text(x, y, string(buffer), color);
 }
 
+//Draws a string with m_tiny_font.
 void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color)
 {
 	for(int i = 0; i < char_string.length(); i++)
@@ -370,6 +416,8 @@ void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, std::string
 	}
 }
 
+
+//Draws an Int with m_tiny_font.
 void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, int value, Color color)
 {
 	char buffer[32];
@@ -379,6 +427,7 @@ void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, int value, 
 	this->draw_tiny_text(x, y, string(buffer), color);
 }
 
+//Draws an Double with m_tiny_font.
 void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, double value, Color color)
 {
 	char buffer[32];
@@ -388,27 +437,46 @@ void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, double valu
 	this->draw_tiny_text(x, y, string(buffer), color);
 }
 
+
+//Blits texture to screen
 void Graphics_System::blit_texture(const Texture* to_render, const Recti& src, const Point2& dst)
 {
+	//Get source Rect
 	SDL_Rect src_sdl = src.to_SDL();
 
+
+	//Scale source rect so we can have the final blitted image dimensions
 	Recti scaled = src.scale(this->m_pixel_scale);
 
 	SDL_Rect dst_sdl;
 
+	//Create the destination rect, scaling everything thats needed.
 	dst_sdl.x = dst[0] * this->m_pixel_scale;
 	dst_sdl.y = dst[1] * this->m_pixel_scale;
 	dst_sdl.w = scaled.width();
 	dst_sdl.h = scaled.height();
 
+	//Does the actual blitting.
 	SDL_RenderCopy(this->m_renderer, to_render->m_texture, &src_sdl, &dst_sdl);
 }
 
+//Blits entire texture to screen
 void Graphics_System::blit_texture(const Texture* to_render, const Point2& dst)
 {
 	this->blit_texture(to_render, to_render->m_rect, dst);
 }
 
+//Draws a 9 segment rectangle on screen.
+//
+//	Texture should be stored with the following pattern on the file.
+//
+//	0	1	2
+//
+//	3	4	6
+//
+//	7	8	9
+//
+// 	Like this, 0, 2, 7 and 9 are corners of a window, 1, 3, 6, 8 are the edges of a window and 4 is the center areas.
 void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& seg_size, 
 										const Texture* window_texture_holder)
 {
@@ -494,6 +562,7 @@ void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& 
 	}
 }
 
+//Draws an audio wave chunk on screen, mostly for debug purposes, but can be used for other stuff.
 void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, 
 								unsigned int height, unsigned int length, Color color)
 {

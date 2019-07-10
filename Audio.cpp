@@ -10,7 +10,13 @@
 
   Be Excellent to Each Other.
 */
-
+/*
+	TODO:
+	Make it work.
+	Software Synthesizer.
+	Play samples (.wav and others)
+	Play Music (.ogg and others)
+*/
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -26,6 +32,8 @@
 
 using namespace std;
 
+//AUDIO SYSTEM MEMBER FUNCTIONS:
+//Creates audio subsystem.
 Audio_System::Audio_System(Engine * parent_engine)
 							: Engine_System(parent_engine)
 {
@@ -50,12 +58,17 @@ Audio_System::Audio_System(Engine * parent_engine)
 	cout << "Done." << std::endl;
 }
 
+//Deletes audio subsystem.
 Audio_System::~Audio_System()
 {
 	Mix_CloseAudio();
 	Mix_Quit();
 }
 
+void Audio_System::update()
+{}
+
+//------------------------------------------
 Sample::Sample(unsigned int sample_size)
 {}
 Sample::~Sample()

@@ -14,8 +14,11 @@
 #include "Engine_System.hpp"
 #include "Engine.hpp"
 
-//TOOD:
-//Add base engine system functionalities
+/*
+	TODO:
+	Add base engine system functionalities
+	Pointer list to other subsystems loaded?
+*/
 
 //Base initialization of engine system base class,
 //basically only constructs an engine system with a pointer to its parent engine.

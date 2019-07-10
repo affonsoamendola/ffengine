@@ -1,3 +1,4 @@
+#pragma once
 /*  
   Copyright Affonso Amendola 2019
 
@@ -10,9 +11,6 @@
 
   Be Excellent to Each Other.
 */
-
-#pragma once
-
 class Engine;
 
 //Base class for engine subsystems, everyone of them should inherit this.
@@ -23,5 +21,6 @@ public:
 
 	Engine_System(Engine * parent_engine);
 
+	//Should this be virtual?
 	void update();
 };
