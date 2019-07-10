@@ -56,28 +56,44 @@ Audio_System::~Audio_System()
 	Mix_Quit();
 }
 
-Synth::Synth(unsigned int sample_rate)
-{
-	this->current_sample = malloc(sample_rate * 2);
+Sample::Sample(unsigned int sample_size)
+{}
+Sample::~Sample()
+{}
 
-	current_chunk.allocated = 0;
-	current_chunk.abuf = this->current_sample;
-	current_chunk.alen = sample_rate * 2;
-	current_chunk.volume = 128;
+Synth::Synth(unsigned int sample_size)
+			: m_current_sample(sample_size)
+{
 }
 
 Synth::~Synth()
+{}
+
+Oscillator::Oscillator(unsigned int sample_size)
 {
-	free(this->current_sample);
+	this->m_allocated_memory = static_cast<unsigned char *>(malloc(sample_size * 2));
+	this->m_sample_size = sample_size;
 }
 
-unsigned char* Modulate()
-
-unsigned char* Square_Wave_Gen(	unsigned char * allocated_memory,
-								int sample_rate, 
-								unsigned char max_r, unsigned char min_r, 
-								unsigned char max_l, unsigned char min_l,
-								int frequency, int phase_shift)
+Oscillator::~Oscillator()
 {
-
+	free(this->m_allocated_memory);
 }
+
+void Square_Wave_Gen(	unsigned char* sample_location,
+						int sample_size,
+						unsigned char max, unsigned char min,
+						int frequency, float phase_shift)
+{
+	unsigned int wave_size = static_cast<unsigned int>((sample_size/frequency)/2);
+	unsigned int phase_shift_sample = static_cast<unsigned int>(phase_shift * wave_size * 2);
+
+	printf("WAVE SIZE %u\n", wave_size);
+	printf("phase_shift_sample %u\n", phase_shift_sample);
+
+	for(int i = 0; i < frequency-1; i++)
+	{
+		memset(sample_location + i * wave_size * 2 + phase_shift_sample, max, wave_size);
+		memset(sample_location + wave_size + i * wave_size * 2 + phase_shift_sample, min, wave_size);
+	}
+}	

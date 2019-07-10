@@ -29,14 +29,51 @@ class Audio_System : public Engine_System
 	void update();
 };
 
+class Sample
+{
+public:
+	Sample(unsigned int sample_size);
+	~Sample();
+};
+
 class Synth
 {
 public:
-	Synth(unsigned int sample_rate);
+	Synth(unsigned int sample_size);
 	~Synth();
 
-	Mix_Chunk current_chunk;
+	Mix_Chunk m_current_chunk;
 
-	unsigned char * current_sample;
-	unsigned int sample_rate;	
+	Sample m_current_sample;
+	unsigned int m_sample_size;	
 };
+
+enum OSCILLATOR_TYPE
+{
+	SQUARE_WAVE,
+	SINE_WAVE,
+	TRIANGLE_WAVE,
+	SAWTOOTH,
+	REV_SAWTOOTH
+};
+
+class Oscillator
+{
+	unsigned char * m_allocated_memory;
+	unsigned int m_sample_size;
+	float phase_shift;
+
+	OSCILLATOR_TYPE Oscillator_Type;
+public:
+	Oscillator(unsigned int sample_size);
+	~Oscillator();
+
+	void Reset_Sampling();
+	
+	unsigned char * Get_Data();
+};
+
+void Square_Wave_Gen(	unsigned char* sample_location,
+						int sample_size,
+						unsigned char max, unsigned char min,
+						int frequency, float phase_shift);

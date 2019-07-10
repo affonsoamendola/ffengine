@@ -10,8 +10,8 @@ GUI_System::GUI_System(	Engine * parent_engine)
 							m_gui_texture("gui.png", parent_engine->m_graphics)
 
 {
-	GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
-	new GUI_Window_Title(Test, "Window", 6, this);
+	//GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
+	//new GUI_Window_Title(Test, "Window", 6, this);
 }
 
 GUI_System::~GUI_System()

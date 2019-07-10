@@ -26,6 +26,10 @@
 #include "SDL2/SDL_render.h"
 #include "SDL2/SDL_image.h"
 
+//TESTING REMOVE LATER
+#include "Audio.hpp"
+//-------
+
 using namespace std;
 
 //TEXTURE CLASS MEMBER FUNCTIONS:
@@ -189,11 +193,20 @@ void Graphics_System::load_tiny_font(string font_location)
 //update before rendering
 void Graphics_System::update(){};
 
+unsigned char test_wave[100];
+
 //Main render function, this clears the screen and draws things to it.
 void Graphics_System::render()
 {
 	//Calls GUI Subsystem Render Function, draws the GUI
 	this->m_parent_engine->m_gui.render();
+
+	Square_Wave_Gen(	test_wave,
+						40,
+						255, 30,
+						4, 0.5);
+
+	this->draw_wave(test_wave, Point2(10, 10), 20, 40, Color(255, 255, 0));
 
 	//Draws the cursor
 	if(this->m_show_mouse) this->draw_cursor();
@@ -481,4 +494,14 @@ void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& 
 	}
 }
 
+void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, 
+								unsigned int height, unsigned int length, Color color)
+{
+	unsigned int screen_y;
+	for(int x = 0; x < length; x++)
+	{
+		screen_y = height - (*(wave+x) * height)/255;
+		this->set_pixel(screen_location[0] + x, screen_location[1] + screen_y, color);
+	}
+}
 //-------------------------------------------
