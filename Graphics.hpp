@@ -98,7 +98,7 @@ public:
 	void draw_cursor();
 
 	void draw_binary_image(unsigned int x, unsigned int y, unsigned int size_x, unsigned int size_y, std::vector<char> image_location, Color color);
-	void draw_wave(unsigned char * wave, const Point2& screen_location, unsigned int height, unsigned int length, Color color);
+	void draw_wave(unsigned char * wave, const Point2& screen_location, int channel, unsigned int height, unsigned int length, Color color);
 	void draw_char(unsigned int x, unsigned int y, char character, Color color);
 	void draw_tiny_char(unsigned int x, unsigned int y, char character, Color color);
 

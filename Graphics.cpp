@@ -90,12 +90,12 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 	this->m_screen_pixels.reserve(this->m_screen_width * this->m_screen_height * 4); 
 	this->m_default_font.reserve(768); //Reserves the binary font location.
 
-	cout << "Initting SDL..." << std::flush;
+	cout << "Initting SDL Video Subsystem..." << std::flush;
 
 	//Start SDL
-	if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if(SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
 	{
-		SDL_Log("\nProblem initializing SDL: %s", SDL_GetError());
+		SDL_Log("\nProblem initializing SDL Video Subsystem: %s", SDL_GetError());
 		exit(1);
 	}
 
@@ -190,7 +190,6 @@ Graphics_System::~Graphics_System()
 	SDL_DestroyRenderer(this->m_renderer);
 	SDL_DestroyWindow(this->m_window);
 	IMG_Quit();
-	SDL_Quit();
 }
 
 //Loads m_default font with the bin file at font_location, format of the bin file
@@ -223,6 +222,7 @@ void Graphics_System::load_tiny_font(string font_location)
 //update before rendering
 void Graphics_System::update(){};
 
+extern Sample test_sample;
 
 //Main render function, this clears the screen and draws things to it.
 void Graphics_System::render()
@@ -231,6 +231,10 @@ void Graphics_System::render()
 
 	//Calls GUI Subsystem Render Function, draws the GUI
 	this->m_parent_engine->m_gui.render();
+
+	SDL_LockAudio();
+	this->draw_wave(this->m_parent_engine->m_audio.m_current_oscillator.m_current_sample.get_phase_shifted_memory(), Point2(10, 10), 0, 100, 64, Color(255, 150, 0));
+	SDL_UnlockAudio();
 
 	//Draws the cursor
 	if(this->m_show_mouse) this->draw_cursor();
@@ -264,7 +268,6 @@ void Graphics_System::render()
 	SDL_SetRenderDrawColor(this->m_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(this->m_renderer);
 	this->clear_screen();
-
 }
 
 //Sets a pixel on screen of Color color
@@ -553,14 +556,15 @@ void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& 
 	}
 }
 
-//Draws an audio wave chunk on screen, mostly for debug purposes, but can be used for other stuff.
-void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, 
+//Draws an audio wave chunk on screen, mostly for debug purposes, but can be used for other stuff.]
+//channel 0 = left, channel 1 = right
+void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, int channel, 
 								unsigned int height, unsigned int length, Color color)
 {
 	unsigned int screen_y;
 	for(int x = 0; x < length; x++)
 	{
-		screen_y = height - (*(wave+x) * height)/255;
+		screen_y = height - (*(wave + x * (2 - channel)) * height)/255;
 		this->set_pixel(screen_location[0] + x, screen_location[1] + screen_y, color);
 	}
 }

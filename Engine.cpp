@@ -35,7 +35,31 @@ Engine::Engine()
 		m_input(this),
 		m_gui(this),
     m_audio(this)
-{}
+{
+    cout << "Initting SDL..." << std::flush;
+
+    //Start SDL
+    if(SDL_Init(SDL_INIT_TIMER) != 0)
+    {
+      SDL_Log("\nProblem initializing SDL: %s", SDL_GetError());
+      exit(1);
+    }
+
+    cout << "Done." << std::endl;
+}
+
+Engine::~Engine()
+{
+  SDL_Quit();
+}
+
+void Engine::delay(int ms)
+{
+  long double start_time = this->get_time();
+  while(this->get_time() < start_time + ms * 0.001)
+  {
+  }
+}
 
 //Vector holding the last AVERAGE_FRAME_T_SAMPLING number of frametimes, to calculate the average framerate.
 vector<double> average_frame_time = vector<double>(AVERAGE_FRAME_T_SAMPLING, 0.);

@@ -41,8 +41,11 @@ public:
 	Audio_System m_audio;
 
 	Engine();
+	~Engine();
 
 	void update();
 	long double delta_time();
 	long double get_time();
+
+	void delay(int ms);
 };
