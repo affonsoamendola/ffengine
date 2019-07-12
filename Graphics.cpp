@@ -233,7 +233,17 @@ void Graphics_System::render()
 	this->m_parent_engine->m_gui.render();
 
 	SDL_LockAudio();
-	this->draw_wave(this->m_parent_engine->m_audio.m_current_oscillator.m_current_sample.get_phase_shifted_memory(), Point2(10, 10), 0, 100, 64, Color(255, 150, 0));
+
+	for(int i = 0; i < 16; i++)
+	{
+		draw_text( 4, 12 * i, MUS_NOTE_LABEL[m_parent_engine->m_audio.m_synth_channels[i]->m_current_note], COLOR_GREEN);
+		draw_text( 20, 12 * i, (int)m_parent_engine->m_audio.m_synth_channels[i]->m_current_octave, COLOR_WHITE);
+
+		draw_wave(	m_parent_engine->m_audio.m_synth_channels[i]->m_sample.m_allocated_memory, 
+					Point2(30, 1 + 12 * i), 0, 
+					0, 7, 256, Color(255, 150, 0));
+	}
+
 	SDL_UnlockAudio();
 
 	//Draws the cursor
@@ -558,13 +568,14 @@ void Graphics_System::draw_9_seg_square(const Recti& window_rect, const Point2& 
 
 //Draws an audio wave chunk on screen, mostly for debug purposes, but can be used for other stuff.]
 //channel 0 = left, channel 1 = right
-void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, int channel, 
+void Graphics_System::draw_wave(unsigned char * wave, const Point2& screen_location, int channel,
+								unsigned int start_point, 
 								unsigned int height, unsigned int length, Color color)
 {
 	unsigned int screen_y;
 	for(int x = 0; x < length; x++)
 	{
-		screen_y = height - (*(wave + x * (2 - channel)) * height)/255;
+		screen_y = height - (*(wave + start_point + x * (2 - channel)) * height)/255;
 		this->set_pixel(screen_location[0] + x, screen_location[1] + screen_y, color);
 	}
 }
