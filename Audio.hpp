@@ -20,7 +20,7 @@
 
 #include "Engine_System.hpp"
 
-enum MUS_NOTE
+enum NOTE_NAME
 {
 	C,
 	CS,
@@ -36,7 +36,13 @@ enum MUS_NOTE
 	B
 };
 
-extern std::map<MUS_NOTE, std::string> MUS_NOTE_LABEL;
+struct Note
+{
+	NOTE_NAME mus_note;
+	int octave = 0;
+};
+
+extern std::map<NOTE_NAME, std::string> NOTE_NAME_LABEL;
 
 //Forward decc
 class Effect;
@@ -130,14 +136,15 @@ public:
 	{
 		m_active = state; 
 		m_effect.m_active = state;
+		m_effect.reset_effect();
 	}
 
-	void set_note(MUS_NOTE new_note, unsigned int octave);
+	void set_note(NOTE_NAME new_note, unsigned int octave);
 	inline unsigned int get_frequency(){return m_current_frequency;}
 
 	unsigned int m_current_instrument = 0;
 
-	MUS_NOTE m_current_note = C;
+	NOTE_NAME m_current_note = C;
 	unsigned int m_current_octave = 0;
 
 	Sample m_sample;
@@ -183,5 +190,5 @@ unsigned char sawtooth_wave(int x, unsigned char max, unsigned char min, unsigne
 							unsigned int phase, unsigned int frequency, unsigned int sample_rate);
 
 
-unsigned int get_frequency_note(MUS_NOTE note, int octave);
+unsigned int get_frequency_note(NOTE_NAME note, int octave);
 

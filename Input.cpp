@@ -23,6 +23,9 @@ Input_System::Input_System(Engine * parent_engine) : Engine_System(parent_engine
 //Called once every frame, updates key states, and does polling on keyboard events.
 void Input_System::update()
 {
+	memset(m_key_down, 0, 284);
+	memset(m_key_up, 0, 284);
+
 	this->m_keyboard_state 	=	SDL_GetKeyboardState(NULL); 
 	this->m_mouse_state 	= 	SDL_GetMouseState(&this->m_mouse_x, &this->m_mouse_y);
 
@@ -30,6 +33,8 @@ void Input_System::update()
 	{
 		if(	this->m_event.type == SDL_KEYDOWN)
 		{
+			if(m_event.key.repeat == 0) m_key_down[m_event.key.keysym.scancode] = true;
+
 			switch(this->m_event.key.keysym.scancode)
 			{
 				case SDL_SCANCODE_F12:
@@ -39,6 +44,11 @@ void Input_System::update()
 					this->m_parent_engine->m_graphics.m_show_frame_time = !this->m_parent_engine->m_graphics.m_show_frame_time;
 					break;
 			}
+		}
+
+		if(	this->m_event.type == SDL_KEYUP)
+		{
+			if(m_event.key.repeat == 0) m_key_up[m_event.key.keysym.scancode] = true;
 		}
 
 		if(	(this->m_event.type == SDL_QUIT) ||

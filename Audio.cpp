@@ -109,143 +109,70 @@ Synth_Channel* Audio_System::get_free_channel(unsigned int instrument)
 
 unsigned int key_octave = 4;
 
+std::map<SDL_Scancode, Synth_Channel*> key_channel;
+
+std::map<SDL_Scancode, Note> key_map = 
+{
+	{SDL_SCANCODE_Q, 			{B,-1}},
+	{SDL_SCANCODE_W,		 	{C, 0}},
+	{SDL_SCANCODE_S, 		   {CS, 0}},
+	{SDL_SCANCODE_E, 			{D, 0}},
+	{SDL_SCANCODE_D, 		   {DS, 0}},
+	{SDL_SCANCODE_R, 			{E, 0}},
+	{SDL_SCANCODE_T, 			{F, 0}},
+	{SDL_SCANCODE_G, 		   {FS, 0}},
+	{SDL_SCANCODE_Y, 			{G, 0}},
+	{SDL_SCANCODE_H, 		   {GS, 0}},
+	{SDL_SCANCODE_U,		 	{A, 0}},
+	{SDL_SCANCODE_J, 		   {AS, 0}},
+	{SDL_SCANCODE_I, 			{B, 0}},
+	{SDL_SCANCODE_O, 			{C, 1}},
+	{SDL_SCANCODE_L,		   {CS, 1}},
+	{SDL_SCANCODE_P, 			{D, 1}},
+	{SDL_SCANCODE_LEFTBRACKET, {DS, 1}},
+	{SDL_SCANCODE_RIGHTBRACKET, {E, 1}},
+};
+
 void Audio_System::update()
 {
 	Input_System * input_system = &this->m_parent_engine->m_input;
 	Synth_Channel* free_channel = nullptr;
 
-	for(int i = 0; i < 16; i++)
-	{
-		m_synth_channels[i]->set_active(false);
-	}
-
-	if 		(input_system->m_keyboard_state[SDL_SCANCODE_1])
+	if 		(input_system->m_key_down[SDL_SCANCODE_1])
 	{	
 		key_octave = 1;
-	}else if(input_system->m_keyboard_state[SDL_SCANCODE_2])
+	}else if(input_system->m_key_down[SDL_SCANCODE_2])
 	{
 		key_octave = 2;
-	}else if(input_system->m_keyboard_state[SDL_SCANCODE_3])
+	}else if(input_system->m_key_down[SDL_SCANCODE_3])
 	{
 		key_octave = 3;
-	}else if(input_system->m_keyboard_state[SDL_SCANCODE_4])
+	}else if(input_system->m_key_down[SDL_SCANCODE_4])
 	{
 		key_octave = 4;
-	}else if(input_system->m_keyboard_state[SDL_SCANCODE_5])
+	}else if(input_system->m_key_down[SDL_SCANCODE_5])
 	{
 		key_octave = 5;
-	}else if(input_system->m_keyboard_state[SDL_SCANCODE_6])
+	}else if(input_system->m_key_down[SDL_SCANCODE_6])
 	{
 		key_octave = 6;
 	}
 
-	if(input_system->m_keyboard_state[SDL_SCANCODE_Q])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(B, key_octave - 1);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_W])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(C, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_S])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(CS, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_E])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(D, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_D])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(DS, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_R])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(E, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_T])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(F, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_G])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(FS, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_Y])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(G, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_H])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(GS, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_U])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(A, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_J])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(AS, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_I])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(B, key_octave);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_O])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(C, key_octave + 1);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_L])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(CS, key_octave + 1);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_P])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(D, key_octave + 1);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_LEFTBRACKET])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(E, key_octave + 1);
-	}
-	if(input_system->m_keyboard_state[SDL_SCANCODE_RIGHTBRACKET])
-	{	
-		free_channel = get_free_channel(0);
-		free_channel->set_active(true);
-		free_channel->set_note(F, key_octave + 1);
+	for(auto it = key_map.begin(); it != key_map.end(); it++)
+	{
+		if(input_system->m_key_down[it->first])
+		{
+			free_channel = get_free_channel(0);
+			key_channel[it->first] = free_channel;
+			free_channel->set_active(true);
+			free_channel->set_note(it->second.mus_note, it->second.octave + key_octave);
+		}
+
+		if(input_system->m_key_up[it->first])
+		{
+			key_channel[it->first]->set_active(false);
+			key_channel.erase(it->first);
+		}
 	}
 }
 
@@ -318,7 +245,7 @@ void Effect::update_effect(unsigned int time_shift)
 {
 	if(m_type == ATTACK && m_active == true)
 	{
-		attack_gen(9000, time_shift);
+		attack_gen(6000, time_shift);
 	}
 }
 
@@ -389,7 +316,7 @@ Synth_Channel::Synth_Channel(unsigned int sample_rate, unsigned int sample_len)
 {
 }
 
-inline void Synth_Channel::set_note(MUS_NOTE new_note, unsigned int octave)
+inline void Synth_Channel::set_note(NOTE_NAME new_note, unsigned int octave)
 {
 	m_current_frequency = get_frequency_note(new_note, octave);
 	m_current_note = new_note;
@@ -410,7 +337,7 @@ Sample* Synth_Channel::get_more_audio()
 
 //NON-MEMBER RELATED FUNCTIONS AND DEFINITIONS
 
-std::map<MUS_NOTE, std::string> MUS_NOTE_LABEL = 
+std::map<NOTE_NAME, std::string> NOTE_NAME_LABEL = 
 {
 	{C, "C"},
 	{CS, "C#"},
@@ -440,7 +367,7 @@ unsigned char square_wave(	int x, unsigned char max, unsigned char min, unsigned
 	else return min; 
 }
 
-unsigned int get_frequency_note(MUS_NOTE note, int octave)
+unsigned int get_frequency_note(NOTE_NAME note, int octave)
 {
 	unsigned int perfect_piano_key = octave * 12 + note;
 

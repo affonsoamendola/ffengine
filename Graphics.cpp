@@ -236,7 +236,7 @@ void Graphics_System::render()
 
 	for(int i = 0; i < 16; i++)
 	{
-		draw_text( 4, 12 * i, MUS_NOTE_LABEL[m_parent_engine->m_audio.m_synth_channels[i]->m_current_note], COLOR_GREEN);
+		draw_text( 4, 12 * i, NOTE_NAME_LABEL[m_parent_engine->m_audio.m_synth_channels[i]->m_current_note], COLOR_GREEN);
 		draw_text( 20, 12 * i, (int)m_parent_engine->m_audio.m_synth_channels[i]->m_current_octave, COLOR_WHITE);
 
 		draw_wave(	m_parent_engine->m_audio.m_synth_channels[i]->m_sample.m_allocated_memory, 

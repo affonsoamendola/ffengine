@@ -27,6 +27,10 @@ private:
 
 public:
 	const unsigned char * m_keyboard_state;
+	
+	bool m_key_down[284];
+	bool m_key_up[284];
+
 	int m_mouse_state;
 
 	int m_mouse_x;
