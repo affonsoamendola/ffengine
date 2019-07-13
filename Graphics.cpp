@@ -232,20 +232,6 @@ void Graphics_System::render()
 	//Calls GUI Subsystem Render Function, draws the GUI
 	this->m_parent_engine->m_gui.render();
 
-	SDL_LockAudio();
-
-	for(int i = 0; i < 16; i++)
-	{
-		draw_text( 4, 12 * i, NOTE_NAME_LABEL[m_parent_engine->m_audio.m_synth_channels[i]->m_current_note], COLOR_GREEN);
-		draw_text( 20, 12 * i, (int)m_parent_engine->m_audio.m_synth_channels[i]->m_current_octave, COLOR_WHITE);
-
-		draw_wave(	m_parent_engine->m_audio.m_synth_channels[i]->m_sample.m_allocated_memory, 
-					Point2(30, 1 + 12 * i), 0, 
-					0, 7, 256, Color(255, 150, 0));
-	}
-
-	SDL_UnlockAudio();
-
 	//Draws the cursor
 	if(this->m_show_mouse) this->draw_cursor();
 	//Draws FPS Counter

@@ -40,7 +40,8 @@ Audio_System::Audio_System(Engine * parent_engine, unsigned int sample_rate, uns
 							: 	Engine_System(parent_engine),
 								m_sample_len(sample_len),
 								m_audio_buffer_size(sample_len*2),
-								m_sample_rate(sample_rate)
+								m_sample_rate(sample_rate),
+								m_final_mix_sample(sample_rate, sample_len)
 {
 	cout << "Initting SDL Audio Subsystem..." << std::flush;
 	
@@ -98,7 +99,7 @@ Synth_Channel* Audio_System::get_free_channel(unsigned int instrument)
 	for(int i = 0; i < 16; i++)
 	{
 		current_channel = m_synth_channels[i];
-		if(current_channel->get_active() == false && current_channel->m_current_instrument == instrument)
+		if(current_channel->get_free() == true && current_channel->m_current_instrument == instrument)
 		{
 			return current_channel;
 		}
@@ -164,13 +165,13 @@ void Audio_System::update()
 		{
 			free_channel = get_free_channel(0);
 			key_channel[it->first] = free_channel;
-			free_channel->set_active(true);
 			free_channel->set_note(it->second.mus_note, it->second.octave + key_octave);
+			free_channel->excite();
 		}
 
 		if(input_system->m_key_up[it->first])
 		{
-			key_channel[it->first]->set_active(false);
+			key_channel[it->first]->release();
 			key_channel.erase(it->first);
 		}
 	}
@@ -181,21 +182,21 @@ void callback(void * userdata, unsigned char * audio_stream, int len)
 	Audio_System* audio_system = (Audio_System*)userdata;
 
 	bool is_playing = false;
-
+	Sample* current_sample;
 	memset(audio_stream, 0, len);
 
 	for(int i = 0; i < audio_system->m_synth_channels.size(); i++)
 	{
-		Sample* current_sample = audio_system->m_synth_channels[i]->get_more_audio();
-
+		current_sample = audio_system->m_synth_channels[i]->get_more_audio();
+		
 		if(audio_system->m_synth_channels[i]->get_active())
 		{
-			is_playing = true;
-
 			SDL_MixAudio(	audio_stream, 
 						 	current_sample->m_allocated_memory, 
 						 	len, SDL_MIX_MAXVOLUME);	
-		}
+
+			is_playing = true;	
+		}		
 	}
 }
 
@@ -204,15 +205,44 @@ void callback(void * userdata, unsigned char * audio_stream, int len)
 //SAMPLE CLASS MEMBER FUNCTIONS
 Sample::Sample(unsigned int sample_rate, unsigned int sample_len)
 {
-	this->m_sample_rate = sample_rate;
-	this->m_sample_len = sample_len;
-	this->m_audio_buffer_size = sample_len * 2;
-	this->m_allocated_memory = static_cast<unsigned char*>(malloc(sizeof(unsigned char) * this->m_audio_buffer_size));
+	m_sample_rate = sample_rate;
+	m_sample_len = sample_len;
+	m_audio_buffer_size = sample_len * 2;
+	m_allocated_memory = static_cast<unsigned char*>(malloc(sizeof(unsigned char) * m_audio_buffer_size));
+
+	memset(m_allocated_memory, 0, m_audio_buffer_size);
 }
 
 Sample::~Sample()
 {
 	free(this->m_allocated_memory);
+}
+
+void Sample::copy(const Sample& sample)
+{
+	m_sample_rate = sample.m_sample_rate;
+	m_sample_len = sample.m_sample_len;
+	m_audio_buffer_size = sample.m_audio_buffer_size;
+
+	for(int i = 0; i < m_audio_buffer_size; i ++)
+	{
+		*(m_allocated_memory + i) = *(sample.m_allocated_memory + i);
+	}
+}
+
+void Sample::mix(const Sample* sample)
+{
+	if(m_sample_len != sample->m_sample_len) printf("MIXING SAMPLE OF DIFFERENT SIZERS\n");
+
+	for(int i = 0; i < m_audio_buffer_size; i ++)
+	{
+		*(m_allocated_memory + i) = (unsigned char)
+									(     ((unsigned int)*(sample->m_allocated_memory + i) + 
+									 	   (unsigned int)*(m_allocated_memory + i))
+										   /2);
+
+		if(i == 30) printf("%u\n", *(m_allocated_memory + i));
+	}
 }
 
 void Sample::apply_effect(Sample* original, Effect* effect)
@@ -241,21 +271,49 @@ Effect::~Effect()
 	free(m_current_profile);
 }
 
-void Effect::update_effect(unsigned int time_shift)
+void Effect::on_excite()
+{
+	if(m_type == ATTACK) m_active = true;
+}
+
+void Effect::on_release()
+{
+	if(m_type == DECAY)  m_active = true;
+}
+
+bool Effect::update_effect(unsigned int time_shift)
 {
 	if(m_type == ATTACK && m_active == true)
 	{
-		attack_gen(6000, time_shift);
+		if(attack_gen(2000, time_shift) == true)
+		{
+			m_active = false;
+		}
 	}
+	
+	if(m_type == DECAY && m_active == true)
+	{
+		if(decay_gen(12000, time_shift) == true)
+		{
+			m_active = false;	
+		}
+	}
+
+	return m_active;
 }
 
-void Effect::attack_gen(unsigned int wind_up, unsigned int t)
+bool Effect::attack_gen(unsigned int wind_up, unsigned int t)
 {
 	float slope = 1./wind_up;
+	bool done = false;
 
 	for(int i = 0; i < m_sample_len; i++)
 	{
-		if(i + t > wind_up) m_current_profile[i] = 1.;
+		if(i + t > wind_up) 
+		{
+			m_current_profile[i] = 1.;
+			done = true;
+		}
 		else
 		{
 			m_current_profile[i] = (i + t) * slope;
@@ -263,7 +321,33 @@ void Effect::attack_gen(unsigned int wind_up, unsigned int t)
 	}
 
 	m_last_t = m_sample_len + t;
+
+	return done;
 }
+
+bool Effect::decay_gen(unsigned int wind_down, unsigned int t)
+{
+	float slope = 1./wind_down;
+	bool done = false;
+
+	for(int i = 0; i < m_sample_len; i++)
+	{
+
+		if(i + t > wind_down)
+		{ 
+			m_current_profile[i] = 0.;
+			done = true;
+		}
+		else
+		{
+			m_current_profile[i] = 1. - (i + t) * slope;
+		}
+	}
+
+	m_last_t = m_sample_len + t;
+	return done;
+}
+
 
 //
 
@@ -275,12 +359,21 @@ Oscillator::Oscillator(unsigned int sample_rate, unsigned int sample_len)
 Oscillator::~Oscillator()
 {}
 
-Sample * Oscillator::update_sample(bool playing, unsigned int freq)
+void Oscillator::on_excite(unsigned int frequency)
 {
-	if(playing == true)
+	m_active = true;
+	m_frequency = frequency;
+}
+
+void Oscillator::on_release()
+{}
+
+Sample * Oscillator::update_sample()
+{
+	if(m_active == true)
 	{
 		square_wave_gen(255, 1, 
-						freq, 
+						m_frequency, 
 						m_current_sample.m_continuing_phase * (0 + m_phase_correction));
 	}
 	else
@@ -311,9 +404,21 @@ void Oscillator::square_wave_gen(	unsigned char max, unsigned char min,
 
 Synth_Channel::Synth_Channel(unsigned int sample_rate, unsigned int sample_len)
 						     :	m_oscillator(sample_rate, sample_len),
-						     	m_effect(sample_len),
 						     	m_sample(sample_rate, sample_len)
 {
+	m_effects.push_back(new Effect(sample_len));
+	m_effects_done.push_back(false);
+	m_effects[0]->m_type = ATTACK;
+	m_effects.push_back(new Effect(sample_len));
+	m_effects_done.push_back(false);
+}
+
+Synth_Channel::~Synth_Channel()
+{
+	for(int i = 0; i < m_effects.size(); i++)
+	{
+		delete m_effects[i];
+	}
 }
 
 inline void Synth_Channel::set_note(NOTE_NAME new_note, unsigned int octave)
@@ -325,11 +430,23 @@ inline void Synth_Channel::set_note(NOTE_NAME new_note, unsigned int octave)
 
 Sample* Synth_Channel::get_more_audio()
 {
-	m_effect.update_effect(m_effect.m_last_t);
-	m_oscillator.update_sample(m_active, m_current_frequency);
+	m_oscillator.update_sample();
+	m_sample.copy(m_oscillator.m_current_sample);
 
-	m_sample.apply_effect(&m_oscillator.m_current_sample, &m_effect);
+	for(int i = 0; i < m_effects.size(); i++)
+	{
+		if(m_effects[i]->m_active)
+		{
+			m_effects_done[i] = !m_effects[i]->update_effect(m_effects[i]->m_last_t);
+			m_sample.apply_effect(&m_sample, m_effects[i]);
+		}
+	}
 
+	if(condition_vector_true(m_effects_done) && m_excited == false)
+	{
+		reset();
+		m_sample.clear();
+	}
 	return &m_sample;
 }
 

@@ -26,3 +26,6 @@ int sign(T val)
 {
     return (T(0) < val) - (val < T(0));
 }
+
+bool condition_vector_true(std::vector<bool> condition_vector);
+bool condition_vector_false(std::vector<bool> condition_vector);

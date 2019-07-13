@@ -25,3 +25,31 @@ void load_bin_file(string bin_location, vector<char> * mem_location, unsigned in
 
 	file.close();
 }
+
+bool condition_vector_true(std::vector<bool> condition_vector)
+{
+	bool answer = true;
+
+	for(int i = 0; i < condition_vector.size(); i++)
+	{
+		if(condition_vector[i] == false) answer = false;
+	}
+
+	return answer;
+}
+
+bool condition_vector_false(std::vector<bool> condition_vector)
+{
+	bool answer = false;
+
+	for(int i = 0; i < condition_vector.size(); i++)
+	{
+		if(condition_vector[i] == true) answer = true;
+	}
+
+	return answer;
+}
+
+
+
+
