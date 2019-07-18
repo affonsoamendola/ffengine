@@ -41,20 +41,16 @@ GUI_Window::GUI_Window(const Recti& local_rect, GUI_System* parent_system)
 Recti GUI_Window::get_rect()
 {
 
-	return Recti(this->m_local_position, this->m_local_position + this->m_size); 
+	return Recti(m_local_position, m_local_position + m_size); 
 }
 
 //Draws this window.
 void GUI_Window::render()
 {
-	this->m_graphics_system->draw_9_seg_square(this->get_rect(), Point2(8, 8), &this->m_parent_system->m_gui_texture);
+	m_graphics_system->draw_9_seg_square(get_rect(), Point2(8, 8), &m_parent_system->m_gui_texture);
 
-	//This should be a property of the GUI_Object's class...
-	//Draws window children.
-	for(int i = 0; i < this->m_elements.size(); i++)
-	{
-		m_elements[i]->render();
-	}
+	//Calls base render after rendered child stuff
+	GUI_Object::render();
 }
 //-------------------------
 
@@ -69,34 +65,39 @@ GUI_Window_Title::GUI_Window_Title(GUI_Window* parent_window, std::string text, 
 
 	int window_center = parent_rect.width()/2;
 
-	this->m_local_text_location  = Point2(window_center - text.length()*4/2, 0);
+	m_local_text_location  = Point2(window_center - text.length()*4/2, 0);
 
-	this->m_local_position = Point2(window_center - length*4/2, 0);
+	m_local_position = Point2(window_center - length*4/2, 0);
 }
 
 //Draws this object.
 void GUI_Window_Title::render()
 {
-	this->m_graphics_system->blit_texture(	&this->m_parent_system->m_gui_texture, 
+	m_graphics_system->blit_texture(	&m_parent_system->m_gui_texture, 
 											Recti({4, 8}).move({24, 0}), 
-											this->get_global_position() + Point2(-1*4, 0) );
+											get_global_position() + Point2(-1*4, 0) );
 
-	this->m_graphics_system->blit_texture(	&this->m_parent_system->m_gui_texture, 
+	m_graphics_system->blit_texture(	&m_parent_system->m_gui_texture, 
 											Recti({4, 8}).move({32, 0}), 
-											this->get_global_position() + Point2(this->m_length*4, 0) );
+											get_global_position() + Point2(m_length*4, 0) );
 
-	for(int i = 0; i < this->m_length; i++)
+	for(int i = 0; i < m_length; i++)
 	{
-		this->m_graphics_system->blit_texture(	&this->m_parent_system->m_gui_texture, 
+		m_graphics_system->blit_texture(	&m_parent_system->m_gui_texture, 
 												Recti({4, 8}).move({28, 0}), 
-												this->get_global_position() + Point2(i, 0) * 4);
+												get_global_position() + Point2(i, 0) * 4);
 	}
 
 
-	Point2 global_text_location = this->get_global_position(this->m_local_text_location);
-	this->m_graphics_system->draw_tiny_text(global_text_location[0], global_text_location[1], this->m_text, Color(255, 255, 255, 255));
+	Point2 global_text_location = get_global_position(m_local_text_location);
+	m_graphics_system->draw_tiny_text(global_text_location[0], global_text_location[1], m_text, Color(255, 255, 255, 255));
 }
 
 //-------------------------
 
+//Useful GUI_Objects custom functions
+int close_GUI_Object_base(GUI_Object * parent_object, void * userdata)
+{
+	delete parent_object->get_base();
+}
 

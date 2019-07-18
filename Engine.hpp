@@ -15,7 +15,6 @@
 #include "Graphics.hpp"
 #include "Input.hpp"
 #include "GUI.hpp"
-#include "Audio.hpp"
 
 //Basically holds the entire Game Engine state (Basically a global, should only be one around.)
 class Engine
@@ -38,7 +37,6 @@ public:
 	Graphics_System m_graphics;
 	Input_System m_input;
 	GUI_System m_gui;
-	Audio_System m_audio;
 
 	Engine();
 	~Engine();

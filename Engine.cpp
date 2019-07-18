@@ -33,8 +33,7 @@ using namespace std;
 Engine::Engine()
 	:	m_graphics(this),
 		m_input(this),
-		m_gui(this),
-    m_audio(this)
+		m_gui(this)
 {
     cout << "Initting SDL..." << std::flush;
 
@@ -77,7 +76,6 @@ void Engine::update()
   this->m_graphics.update();
   this->m_input.update();
   this->m_gui.update();
-  this->m_audio.update();
 
   //The only function that should have a render() is m_graphics, think of it as a separate update
   //On earlier versions, every render function ran on update() but I tought it would be best to keep them separate

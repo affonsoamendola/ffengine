@@ -65,3 +65,8 @@ public:
 
 	void render();
 };
+
+//-------------------------
+
+//Useful GUI_Objects custom functions
+int close_GUI_Object_base(GUI_Object * parent_object, void * userdata);

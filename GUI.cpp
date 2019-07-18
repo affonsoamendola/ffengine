@@ -37,8 +37,11 @@ GUI_System::GUI_System(	Engine * parent_engine)
 							m_gui_texture("gui.png", parent_engine->m_graphics)
 
 {
-	//GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
-	//new GUI_Window_Title(Test, "Window", 6, this);
+	GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
+	GUI_Window_Title* test_win = new GUI_Window_Title(Test, "Window", 6, this);
+
+	test_win->set_on_click(close_GUI_Object_base, nullptr);
+	test_win->on_click();
 }
 
 //Destroys the GUI Subsystem
@@ -59,9 +62,9 @@ void GUI_System::update()
 //Render function, called first on the render sequence.
 void GUI_System::render()
 {
-	for(int i = 0; i < this->m_object_list.size(); i++)
+	for(int i = 0; i < m_object_list.size(); i++)
 	{
-		this->m_object_list[i]->render();
+		m_object_list[i]->render();
 	}
 }
 
@@ -76,14 +79,15 @@ void GUI_System::render()
 //on and so forth.
 GUI_Object::GUI_Object(	const Point2& position, GUI_System* parent_system)
 {
-	this->m_is_base = true;
+	m_is_child = false;
 
-	this->m_parent_system = parent_system;
-	this->m_graphics_system = &this->m_parent_system->m_parent_engine->m_graphics;
+	m_parent_system = parent_system;
+	m_graphics_system = &m_parent_system->m_parent_engine->m_graphics;
 
-	this->m_parent_system->m_object_list.push_back(this);
+	m_parent_system->m_object_list.push_back(this);
+	m_object_id = m_parent_system->m_object_list.size() - 1;
 
-	this->m_local_position = position;
+	m_local_position = position;
 }
 
 //Creates a GUI Object,
@@ -91,24 +95,32 @@ GUI_Object::GUI_Object(	const Point2& position, GUI_System* parent_system)
 //In its parents elements list. Its render and update will be called after its parents.
 GUI_Object::GUI_Object(	GUI_Object* parent_object, const Point2& local_position, GUI_System* parent_system)
 {
-	this->m_is_base = false;
+	m_is_child = true;
 	
-	this->m_parent_object = parent_object;
-	this->m_parent_object->m_elements.push_back(this);
+	m_parent_system = parent_system;
+	m_graphics_system = &m_parent_system->m_parent_engine->m_graphics;
 
-	this->m_parent_system = parent_system;
-	this->m_graphics_system = &this->m_parent_system->m_parent_engine->m_graphics;
+	parent_object->add_child(this);
 
-	this->m_local_position = local_position;
+	m_local_position = local_position;
 }
 
 //Destroys GUI Object.
 GUI_Object::~GUI_Object()
 {
-	//Kills all children.
-	for(int i = 0; i < this->m_elements.size(); i++)
+	if(m_is_child)
 	{
-		delete this->m_elements[i];
+		m_parent_object->remove_child(this);
+	}
+	else
+	{
+		m_parent_system->remove_base_object(this);
+	}
+
+	//Kills all children.
+	for(int i = 0; i < m_elements.size(); i++)
+	{
+		delete m_elements[i];
 	}
 }
 
@@ -117,7 +129,7 @@ GUI_Object* GUI_Object::get_base()
 {
 	GUI_Object* current_object = this;
 	
-	while(!(current_object->m_is_base))
+	while(current_object->m_is_child)
 	{
 		current_object = current_object->m_parent_object;
 	}
@@ -144,7 +156,7 @@ Point2 GUI_Object::get_global_position(const Point2& local_position)
 
 	current_position += local_position;
 	
-	while(!(current_object->m_is_base))
+	while(current_object->m_is_child)
 	{
 		current_object = current_object->m_parent_object;
 		current_position += current_object->m_local_position;
@@ -158,9 +170,51 @@ Point2 GUI_Object::get_global_position(const Point2& local_position)
 //relation to its parents, as such gets its global position.
 Point2 GUI_Object::get_global_position()
 {
-	return this->get_global_position(this->m_local_position);
+
+	return get_global_position(m_local_position);
+}
+
+//Sets up a custom on_click function that will be called with the second argument being a void * to userdata
+//Basically will call on_click_custom(this, userdata);
+inline void GUI_Object::set_on_click(	int (*on_click_custom)(GUI_Object* parent_object, void*), 
+										void * userdata)
+{
+	m_on_click_custom = on_click_custom;
+	m_on_click_custom_userdata = userdata;
+}
+	
+//Called once every frame, should be reserved for drawing
+void GUI_Object::render()
+{
+	//Calls the custom render function for this  object
+	if(m_render_custom != nullptr) m_render_custom(this, m_render_custom_userdata);
+
+	//Draws window children.
+	for(int i = 0; i < m_elements.size(); i++)
+	{
+		m_elements[i]->render();
+	}
+}
+
+//Called once every frame
+void GUI_Object::update()
+{
+	//Calls the custom update function for this object
+	if(m_update_custom != nullptr) m_update_custom(this, m_update_custom_userdata);
+}
+
+//Called every frame theres a mouse over this object.
+void GUI_Object::on_hover()
+{
+	//Calls the custom on_hover function for this object.
+	if(m_on_hover_custom != nullptr) m_on_hover_custom(this, m_on_hover_custom_userdata);
+}
+
+//Called when theres a mouse click on this object.
+void GUI_Object::on_click()
+{
+	//Callse the custom on_click function for this object.
+	if(m_on_click_custom != nullptr) m_on_click_custom(this, m_on_click_custom_userdata);
 }
 
 //------------------------------------------
-
-

@@ -32,10 +32,6 @@
 #include "SDL2/SDL_render.h"
 #include "SDL2/SDL_image.h"
 
-//TESTING REMOVE LATER
-#include "Audio.hpp"
-//-------
-
 using namespace std;
 
 //TEXTURE CLASS MEMBER FUNCTIONS:
@@ -221,8 +217,6 @@ void Graphics_System::load_tiny_font(string font_location)
 
 //update before rendering
 void Graphics_System::update(){};
-
-extern Sample test_sample;
 
 //Main render function, this clears the screen and draws things to it.
 void Graphics_System::render()
