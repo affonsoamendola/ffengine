@@ -38,10 +38,7 @@ GUI_System::GUI_System(	Engine * parent_engine)
 
 {
 	GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
-	GUI_Window_Title* test_win = new GUI_Window_Title(Test, "Window", 6, this);
-
-	test_win->set_on_click(close_GUI_Object_base, nullptr);
-	test_win->on_click();
+	GUI_Window_Title* test_win = new GUI_Window_Title(Test, "Testing", 6, this);
 }
 
 //Destroys the GUI Subsystem

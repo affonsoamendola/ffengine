@@ -27,24 +27,13 @@
 
 #include "Engine_System.hpp"
 
-class Engine;
+#include "Color.hpp"
+#include "Graphics_Text.hpp"
 
-//Definition of what a Color object is,
-//a bunch of uint8s, defaults to opaque black.
-class Color
-{
-public:
-	unsigned char r = 0;
-	unsigned char g = 0;
-	unsigned char b = 0;
-	unsigned char a = 255;
-
-	Color(unsigned char t_r = 0, unsigned char t_g = 0, unsigned char t_b = 0) : r(t_r), g(t_g), b(t_b) {}
-	Color(unsigned char t_r, unsigned char t_g, unsigned char t_b, unsigned char t_a) : r(t_r), g(t_g), b(t_b), a(t_a) {}
-};
-
-//Forward dec, Graphics_System needs to know what a Texture is.
+//Forward decs
 class Texture;
+class Engine;
+struct Sprite;
 
 //Declaration of Graphics Engine Subsystem.
 class Graphics_System : public Engine_System
@@ -116,6 +105,8 @@ public:
 
 	void blit_texture(const Texture* to_render, const Recti& src, const Point2& dst);
 	void blit_texture(const Texture* to_render, const Point2& dst);
+	
+	void draw_sprite(const Sprite* sprite, const Point2& dst);
 };
 
 //Declaration of what is a texture
@@ -159,7 +150,7 @@ struct Sprite
 
 	Color m_color_mod = {255, 255, 255, 255}; 
 
-	Recti m_texture_sheet_rect;
+	Recti m_rect;
 
 	inline void set_color_mod(Color color)
 	{
@@ -172,13 +163,6 @@ struct Sprite
 	Sprite(Texture* m_texture_sheet, const Recti& m_texture_sheet_rect);
 	~Sprite();
 };
-
-//Some default colors
-const Color COLOR_RED = {255, 0, 0, 255};
-const Color COLOR_GREEN = {0, 255, 0, 255};
-const Color COLOR_BLUE = {0, 0, 255, 255};
-const Color COLOR_BLACK = {0, 0, 0, 255};
-const Color COLOR_WHITE = {255, 255, 255, 255};
 
 //while I dont make a cursor texture, here is a cursor.
 const std::vector<char> CURSOR 	     = 	{0,		 	 0,          0, 0b00011000, 0b00011000,          0,          0, 0};

@@ -121,7 +121,7 @@ void Engine::update()
 long double Engine::delta_time()
 {
 	const unsigned int frame_end = SDL_GetPerformanceCounter();
-    const static unsigned int freq = SDL_GetPerformanceFrequency();
+  const static unsigned int freq = SDL_GetPerformanceFrequency();
     
 	return (frame_end - this->frame_start) / static_cast<long double>(freq);
 }

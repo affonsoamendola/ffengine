@@ -58,10 +58,12 @@ public:
 class GUI_Button : public GUI_Object
 {
 public:
-	Sprite* current_spr;
-	Sprite  idle_spr;
-	Sprite  on_hover_spr;
-	Sprite  on_click_spr;
+	Recti m_hit_box;
+
+	Sprite* m_current_spr;
+	Sprite  m_idle_spr;
+	Sprite  m_on_hover_spr;
+	Sprite  m_on_click_spr;
 
 	void render();
 };

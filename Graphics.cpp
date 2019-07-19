@@ -39,33 +39,33 @@ using namespace std;
 Texture::Texture(string file_location, Graphics_System& g_system)
 {
 	//Load texture
-	this->m_surface = IMG_Load(file_location.c_str());
+	m_surface = IMG_Load(file_location.c_str());
 	
 	//Error handling
-	if(this->m_surface == nullptr)
+	if(m_surface == nullptr)
 	{
 		SDL_Log("\nFailure opening image file: %s", SDL_GetError());
 		exit(1);
 	}
 
 	//Make a texture from surface, basically sends it to the GPU (I think?)
-	this->m_texture = SDL_CreateTextureFromSurface(g_system.m_renderer, this->m_surface);
+	m_texture = SDL_CreateTextureFromSurface(g_system.m_renderer, m_surface);
 
 	//Error handling
-	if(this->m_texture == nullptr)
+	if(m_texture == nullptr)
 	{
 		SDL_Log("\nFailure creating texture: %s", SDL_GetError());
 		exit(1);
 	}
 
 	//Define the bounds of this texture, from the surface bounds.
-	this->m_rect = Recti({0, 0}, Point2(this->m_surface->w, this->m_surface->h));
+	m_rect = Recti({0, 0}, Point2(m_surface->w, m_surface->h));
 
 	//Basic setups for SDL texture for color and alpha mods and blendin, if the system supports it.
 	//If the system doesnt support it, things will go very wrong.
-	if(SDL_SetTextureColorMod(this->m_texture, 255, 255, 255) == -1) 	SDL_Log("\nTexture Color Modulation Not Supported on this renderer");
-	if(SDL_SetTextureAlphaMod(this->m_texture, 255) == -1) 				SDL_Log("\nTexture Alpha Modulation Not Supported on this renderer");
-	SDL_SetTextureBlendMode(this->m_texture, SDL_BLENDMODE_BLEND);
+	if(	SDL_SetTextureColorMod(m_texture, 255, 255, 255) == -1) 	SDL_Log("\nTexture Color Modulation Not Supported on this renderer");
+	if(	SDL_SetTextureAlphaMod(m_texture, 255) == -1) 				SDL_Log("\nTexture Alpha Modulation Not Supported on this renderer");
+		SDL_SetTextureBlendMode(m_texture, SDL_BLENDMODE_BLEND);
 }
 
 //Destroy texture.
@@ -448,6 +448,19 @@ void Graphics_System::blit_texture(const Texture* to_render, const Recti& src, c
 void Graphics_System::blit_texture(const Texture* to_render, const Point2& dst)
 {
 	this->blit_texture(to_render, to_render->m_rect, dst);
+}
+
+//Draws a sprite on screen.
+void Graphics_System::draw_sprite(const Sprite* sprite, const Point2& dst)
+{
+	Texture * texture = sprite->m_texture_sheet;
+	Color original_mod = texture->get_color_mod();
+
+	texture->set_color_mod(sprite->m_color_mod);
+	
+	blit_texture(texture, sprite->m_rect, dst);
+
+	texture->set_color_mod(original_mod);
 }
 
 //Draws a 9 segment rectangle on screen.
