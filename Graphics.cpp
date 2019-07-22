@@ -57,7 +57,6 @@ Texture::Texture(string file_location, Graphics_System& g_system)
 		SDL_Log("\nFailure creating texture: %s", SDL_GetError());
 		exit(1);
 	}
-
 	//Define the bounds of this texture, from the surface bounds.
 	m_rect = Recti({0, 0}, Point2(m_surface->w, m_surface->h));
 
@@ -72,19 +71,19 @@ Texture::Texture(string file_location, Graphics_System& g_system)
 Texture::~Texture()
 {
 	//Frees the surface that was in heap.
-	SDL_FreeSurface(this->m_surface);
+	SDL_FreeSurface(m_surface);
 }
 
 //--------------------------------------------
 //GRAPHICS SYSTEM CLASS MEMBER FUNCTIONS
 //Creates and initializes a new Graphics Subsystem for the parent engine.
-Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_engine)
+Graphics_System::Graphics_System(Engine * parent_engine) 
+				:	Engine_System(parent_engine)
 {
 	//Reserve the memory needed for the framebuffer  (NOT REALLY the framebuffer, but its the screen 
 	//step before the actual screen, so its more like a pixel scaled version of the screen)
 	//Can I acctually just write to the framebuffer directly with SDL?, To get some speed?
 	this->m_screen_pixels.reserve(this->m_screen_width * this->m_screen_height * 4); 
-	this->m_default_font.reserve(768); //Reserves the binary font location.
 
 	cout << "Initting SDL Video Subsystem..." << std::flush;
 
@@ -157,11 +156,7 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 												);
 	SDL_SetTextureBlendMode(this->m_screen_surface, SDL_BLENDMODE_BLEND);
 
-	//Loads the default binary font.
-	this->load_default_font("8x8Font.fnt");
-
-	//Loads the tiny text font.
-	this->load_tiny_font("4x6Font.png");
+	m_font_ss = new Font_Subsystem(this);
 
 	//Loads fallback texture, Dopefish Lives, Hail Carmack.
 	this->load_texture("dopefish.png");
@@ -173,46 +168,18 @@ Graphics_System::Graphics_System(Engine * parent_engine) : Engine_System(parent_
 //Destroy Graphics subsystem.
 Graphics_System::~Graphics_System()
 {
-	//free tiny_text_font, since it was on the heap.
-	delete this->m_tiny_text_font;
-
 	//Free all textures
 	for(int i = 0; i < this->m_texture_holder.size(); i++)
 	{
 		delete this->m_texture_holder[i];
 	}
 
+	delete m_font_ss;
+
 	//Quit everything.
 	SDL_DestroyRenderer(this->m_renderer);
 	SDL_DestroyWindow(this->m_window);
 	IMG_Quit();
-}
-
-//Loads m_default font with the bin file at font_location, format of the bin file
-//is 8 bits representing each line of 8 pixels, 1bpp, beginning with character 20h
-//basically 8 lines of 8 bits representing each character, consecutively.
-//
-// Character ! (21h)
-// 00000000
-// 00011000
-// 00011000
-// 00011000
-// 00011000
-// 00000000
-// 00011000
-// 00011000
-// 
-// represented in bin file as 00000000 00011000 00011000 00011000 00011000 00000000 00011000 00011000
-// or (hex) 00 18 18 18 00 18 18
-void Graphics_System::load_default_font(string font_location)
-{
-	load_bin_file(font_location, &this->m_default_font, 768);
-}
-
-//Loads the default tiny_font, as a texture Image, should do this with the other default font to unify them.
-void Graphics_System::load_tiny_font(string font_location)
-{
-	this->m_tiny_text_font = new Texture(font_location, *this);
 }
 
 //update before rendering
@@ -224,18 +191,21 @@ void Graphics_System::render()
 //Put things that draw to screen between HERE:
 
 	//Calls GUI Subsystem Render Function, draws the GUI
-	this->m_parent_engine->m_gui.render();
+	m_parent_engine->m_gui.render();
 
 	//Draws the cursor
-	if(this->m_show_mouse) this->draw_cursor();
+	if(m_show_mouse) draw_cursor();
 	//Draws FPS Counter
-	if(this->m_show_fps) 
-		this->draw_text(this->m_screen_width - 40, 0, this->m_parent_engine->m_avg_fps, COLOR_RED);
+	if(m_show_fps) 
+		draw_text(	m_screen_width - 40, 0, m_parent_engine->m_avg_fps, COLOR_RED, 
+					m_parent_engine->m_graphics.m_font_ss->get_font(0));
 	//Draws FrameTime Counter and Dropped frames counter.
-	if(this->m_show_frame_time)
+	if(m_show_frame_time)
 	{ 
-		this->draw_text(this->m_screen_width - 40, 8, this->m_parent_engine->m_avg_frame_time * 1000, COLOR_RED);
-		this->draw_text(this->m_screen_width - 40, 16, this->m_parent_engine->m_dropped_frames, COLOR_RED);
+		draw_text(	m_screen_width - 40, 8, m_parent_engine->m_avg_frame_time * 1000, COLOR_RED, 
+					m_parent_engine->m_graphics.m_font_ss->get_font(0));
+		draw_text(	m_screen_width - 40, 16, m_parent_engine->m_dropped_frames, COLOR_RED, 
+					m_parent_engine->m_graphics.m_font_ss->get_font(0));
 	}
 
 //AND HERE.
@@ -336,91 +306,139 @@ void Graphics_System::draw_cursor()
 						*current_cursor, COLOR_WHITE);
 }
 
-//Draws a char with the m_default_font (8x8) on screen at pos x,y with Color color
-void Graphics_System::draw_char(unsigned int x, unsigned int y, char character, Color color)
-{
-	//Change ASCII code into the actual image code, since the first char in the image is actually ASCII 20h
-	unsigned int offset = (unsigned int)((character-32) * 8);
 
-	this->draw_binary_image(x, y, 8, 8, std::vector<char>(this->m_default_font.begin()+offset, this->m_default_font.begin()+offset+8), color);
-}
-
-//Draws a char with the m_tiny_font (4x6) on screen at pos x,y with Color color
-void Graphics_System::draw_tiny_char(unsigned int x, unsigned int y, char character, Color color)
+void Graphics_System::draw_char(unsigned int x, unsigned int y, char character, Color color, Font* font)
 {
 	unsigned int offset = (unsigned int)((character-32));
+
+	Recti char_size = font->m_char_size;
 
 	unsigned int tex_x = offset % 32;
 	unsigned int tex_y = offset / 32;
 
-	Color original_mod = this->m_tiny_text_font->get_color_mod();
+	Color original_mod = font->m_texture->get_color_mod();
 
-	this->m_tiny_text_font->set_color_mod(color);
+	font->m_texture->set_color_mod(color);
 
-	this->blit_texture(this->m_tiny_text_font, Recti({4, 6}).move(Point2(tex_x * 4, tex_y * 6)), Point2(x, y));
+	blit_texture(font->m_texture, char_size.move(Point2(tex_x * char_size.size()[0], tex_y * char_size.size()[1])), Point2(x, y));
 
-	this->m_tiny_text_font->set_color_mod(original_mod);
+	font->m_texture->set_color_mod(original_mod);
 }
+/*
+
+	//Draws a char with the m_default_font (8x8) on screen at pos x,y with Color color
+	void Graphics_System::draw_char(unsigned int x, unsigned int y, char character, Color color)
+	{
+		//Change ASCII code into the actual image code, since the first char in the image is actually ASCII 20h
+		unsigned int offset = (unsigned int)((character-32) * 8);
+
+		this->draw_binary_image(x, y, 8, 8, std::vector<char>(this->m_default_font.begin()+offset, this->m_default_font.begin()+offset+8), color);
+	}
+
+	//Draws a char with the m_tiny_font (4x6) on screen at pos x,y with Color color
+	void Graphics_System::draw_tiny_char(unsigned int x, unsigned int y, char character, Color color)
+	{
+		unsigned int offset = (unsigned int)((character-32));
+
+		unsigned int tex_x = offset % 32;
+		unsigned int tex_y = offset / 32;
+
+		Color original_mod = this->m_tiny_text_font->get_color_mod();
+
+		this->m_tiny_text_font->set_color_mod(color);
+
+		this->blit_texture(this->m_tiny_text_font, Recti({4, 6}).move(Point2(tex_x * 4, tex_y * 6)), Point2(x, y));
+
+		this->m_tiny_text_font->set_color_mod(original_mod);
+	}
+*/
 
 //Draws a string with m_default_font.
-void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_string, Color color)
+void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_string, Color color, Font* font)
 {
 	for(int i = 0; i < char_string.length(); i++)
 	{
-		this->draw_char(x + 8 * i, y, char_string[i], color);
+		this->draw_char(x + font->m_char_size.size()[0] * i, y, char_string[i], color, font);
 	}
 }
 
-//Draws an Int value with m_default_font
-void Graphics_System::draw_text(unsigned int x, unsigned int y, int value, Color color)
+void Graphics_System::draw_text(unsigned int x, unsigned int y, int value, Color color, Font* font)
 {
 	char buffer[32];
 
 	sprintf(buffer, "%d", value);
 
-	this->draw_text(x, y, string(buffer), color);
+	this->draw_text(x, y, string(buffer), color, font);
 }
 
-//Draws a Double with m_default_font
-void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Color color)
+void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Color color, Font* font)
 {
 	char buffer[32];
 
 	sprintf(buffer, "%g", value);
 
-	this->draw_text(x, y, string(buffer), color);
+	this->draw_text(x, y, string(buffer), color, font);
 }
-
-//Draws a string with m_tiny_font.
-void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color)
-{
-	for(int i = 0; i < char_string.length(); i++)
+/*
+	//Draws a string with m_default_font.
+	void Graphics_System::draw_text(unsigned int x, unsigned int y, string char_string, Color color)
 	{
-		this->draw_tiny_char(x + 4 * i, y, char_string[i], color);
+		for(int i = 0; i < char_string.length(); i++)
+		{
+			this->draw_char(x + 8 * i, y, char_string[i], color);
+		}
 	}
-}
+
+	//Draws an Int value with m_default_font
+	void Graphics_System::draw_text(unsigned int x, unsigned int y, int value, Color color)
+	{
+		char buffer[32];
+
+		sprintf(buffer, "%d", value);
+
+		this->draw_text(x, y, string(buffer), color);
+	}
+
+	//Draws a Double with m_default_font
+	void Graphics_System::draw_text(unsigned int x, unsigned int y, double value, Color color)
+	{
+		char buffer[32];
+
+		sprintf(buffer, "%g", value);
+
+		this->draw_text(x, y, string(buffer), color);
+	}
+
+	//Draws a string with m_tiny_font.
+	void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color)
+	{
+		for(int i = 0; i < char_string.length(); i++)
+		{
+			this->draw_tiny_char(x + 4 * i, y, char_string[i], color);
+		}
+	}
 
 
-//Draws an Int with m_tiny_font.
-void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, int value, Color color)
-{
-	char buffer[32];
+	//Draws an Int with m_tiny_font.
+	void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, int value, Color color)
+	{
+		char buffer[32];
 
-	sprintf(buffer, "%d", value);
+		sprintf(buffer, "%d", value);
 
-	this->draw_tiny_text(x, y, string(buffer), color);
-}
+		this->draw_tiny_text(x, y, string(buffer), color);
+	}
 
-//Draws an Double with m_tiny_font.
-void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, double value, Color color)
-{
-	char buffer[32];
+	//Draws an Double with m_tiny_font.
+	void Graphics_System::draw_tiny_text(unsigned int x, unsigned int y, double value, Color color)
+	{
+		char buffer[32];
 
-	sprintf(buffer, "%g", value);
+		sprintf(buffer, "%g", value);
 
-	this->draw_tiny_text(x, y, string(buffer), color);
-}
-
+		this->draw_tiny_text(x, y, string(buffer), color);
+	}
+*/
 
 //Blits texture to screen
 void Graphics_System::blit_texture(const Texture* to_render, const Recti& src, const Point2& dst)

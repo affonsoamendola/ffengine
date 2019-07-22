@@ -90,7 +90,8 @@ void GUI_Window_Title::render()
 
 
 	Point2 global_text_location = get_global_position(m_local_text_location);
-	m_graphics_system->draw_tiny_text(global_text_location[0], global_text_location[1], m_text, Color(255, 255, 255, 255));
+	m_graphics_system->draw_text(	global_text_location[0], global_text_location[1], 
+									m_text, Color(255, 255, 255, 255), m_graphics_system->m_font_ss->get_font(1));
 }
 
 //-------------------------

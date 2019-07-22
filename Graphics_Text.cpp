@@ -32,7 +32,8 @@ Font::~Font()
 Font_Subsystem::Font_Subsystem(Graphics_System* parent_system)
 				:m_parent_system(parent_system)
 {
-	load_font()
+	load_font(0, "8x8SerifFont.png", Recti({8,8}));
+	load_font(1, "4x6Font.png", Recti({4,6}));
 }
 
 Font_Subsystem::~Font_Subsystem()

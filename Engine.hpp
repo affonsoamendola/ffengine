@@ -35,6 +35,7 @@ public:
 	int m_dropped_frames = 0;
 
 	Graphics_System m_graphics;
+	
 	Input_System m_input;
 	GUI_System m_gui;
 

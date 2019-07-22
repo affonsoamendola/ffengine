@@ -39,12 +39,10 @@ struct Sprite;
 class Graphics_System : public Engine_System
 {
 private:
-	std::vector<char> m_default_font; //Default binary font location in memory
 	std::vector<unsigned char> m_screen_pixels; //APPARENTLY stored in BGRA, take that into account always
 public:
 	std::vector<Texture*> m_texture_holder; //List of all loaded textures.
-
-	Texture * m_tiny_text_font;
+	Font_Subsystem* m_font_ss;
 
 	const unsigned int m_screen_width = 320;
 	const unsigned int m_screen_height = 200;
@@ -89,9 +87,19 @@ public:
 	void draw_binary_image(unsigned int x, unsigned int y, unsigned int size_x, unsigned int size_y, std::vector<char> image_location, Color color);
 	void draw_wave(	unsigned char * wave, const Point2& screen_location, int channel, 
 					unsigned int start_point, unsigned int height, unsigned int length, Color color);
+
+	void draw_char(unsigned int x, unsigned int y, char character, Color color, Font* font);
+
+	/*
 	void draw_char(unsigned int x, unsigned int y, char character, Color color);
 	void draw_tiny_char(unsigned int x, unsigned int y, char character, Color color);
+	*/
 
+	void draw_text(unsigned int x, unsigned int y, std::string char_string, Color color, Font* font);
+	void draw_text(unsigned int x, unsigned int y, int value, Color color, Font* font);
+	void draw_text(unsigned int x, unsigned int y, double value, Color color, Font* font);
+
+	/*
 	void draw_text(unsigned int x, unsigned int y, std::string char_string, Color color);
 	void draw_text(unsigned int x, unsigned int y, int value, Color color);
 	void draw_text(unsigned int x, unsigned int y, double value, Color color);
@@ -99,6 +107,7 @@ public:
 	void draw_tiny_text(unsigned int x, unsigned int y, std::string char_string, Color color);
 	void draw_tiny_text(unsigned int x, unsigned int y, int value, Color color);
 	void draw_tiny_text(unsigned int x, unsigned int y, double value, Color color);
+	*/
 
 	void draw_9_seg_square(	const Recti& window_rect, const Point2& seg_size, 
 							const Texture* window_texture_holder);

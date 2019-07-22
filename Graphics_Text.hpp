@@ -57,6 +57,8 @@ public:
 	Font_Subsystem(Graphics_System* parent_system);
 	~Font_Subsystem();
 
+	Font* get_font(unsigned int font_id){ return m_font_textures[font_id];}
+
 	void load_font(unsigned int font_id, std::string file_location, Recti character_size);
 	void unload_font(unsigned int font_id);
 };
