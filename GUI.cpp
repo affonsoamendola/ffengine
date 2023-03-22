@@ -39,6 +39,7 @@ GUI_System::GUI_System(	Engine * parent_engine)
 {
 	GUI_Window* Test = new GUI_Window(Recti({49, 49}).move(Point2({30, 20})), this);
 	GUI_Window_Title* test_win = new GUI_Window_Title(Test, "Testing", 6, this);
+	test_win->set_on_click(close_GUI_Object_base, nullptr);
 }
 
 //Destroys the GUI Subsystem
@@ -173,7 +174,7 @@ Point2 GUI_Object::get_global_position()
 
 //Sets up a custom on_click function that will be called with the second argument being a void * to userdata
 //Basically will call on_click_custom(this, userdata);
-inline void GUI_Object::set_on_click(	int (*on_click_custom)(GUI_Object* parent_object, void*), 
+inline void GUI_Object::set_on_click(	int (*on_click_custom)(GUI_Object* target_object, void* userdata), 
 										void * userdata)
 {
 	m_on_click_custom = on_click_custom;
@@ -186,7 +187,7 @@ void GUI_Object::render()
 	//Calls the custom render function for this  object
 	if(m_render_custom != nullptr) m_render_custom(this, m_render_custom_userdata);
 
-	//Draws window children.
+	//Draws GUI Object children.
 	for(int i = 0; i < m_elements.size(); i++)
 	{
 		m_elements[i]->render();
@@ -215,3 +216,4 @@ void GUI_Object::on_click()
 }
 
 //------------------------------------------
+

@@ -32,7 +32,7 @@
 
 //GUI_WINDOW CLASS MEMBER FUNCTIONS:
 //Creates a new Window. At rect local_rect
-GUI_Window::GUI_Window(const Recti& local_rect, GUI_System* parent_system)
+GUI_Window::GUI_Window(const Recti& local_rect, bool close_button, GUI_System* parent_system)
 						: 	GUI_Object(local_rect.p0(), parent_system),
 							m_size(local_rect.size())
 {}
@@ -97,8 +97,8 @@ void GUI_Window_Title::render()
 //-------------------------
 
 //Useful GUI_Objects custom functions
-int close_GUI_Object_base(GUI_Object * parent_object, void * userdata)
+int close_GUI_Object_base(GUI_Object * target_object, void * userdata)
 {
-	delete parent_object->get_base();
+	delete target_object->get_base();
 }
 
